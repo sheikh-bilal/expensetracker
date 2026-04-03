@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Clean neutral base — Premium fintech palette */
+    --background: 220 20% 97%;
+    --foreground: 224 15% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 224 15% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 15% 12%;
+
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 224 15% 12%;
+
+    /* Single primary: Indigo */
+    --primary: 239 84% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 14% 94%;
+    --secondary-foreground: 224 15% 30%;
+
+    --muted: 220 14% 94%;
+    --muted-foreground: 220 9% 50%;
+
+    --accent: 239 84% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 239 84% 58%;
+
+    --radius: 0.75rem;
+
+    /* Category colors — muted, semantic */
+    --color-food: 145 55% 45%;
+    --color-transport: 214 80% 52%;
+    --color-shopping: 35 90% 50%;
+    --color-entertainment: 258 70% 58%;
+    --color-bills: 0 65% 52%;
+    --color-health: 330 65% 54%;
+    --color-education: 196 80% 44%;
+    --color-other: 220 9% 52%;
+  }
+
+  .dark {
+    --background: 224 20% 9%;
+    --foreground: 220 14% 93%;
+
+    --card: 224 18% 12%;
+    --card-foreground: 220 14% 93%;
+
+    --popover: 224 18% 12%;
+    --popover-foreground: 220 14% 93%;
+
+    --sidebar: 224 18% 12%;
+    --sidebar-foreground: 220 14% 93%;
+
+    --primary: 239 84% 62%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 224 14% 18%;
+    --secondary-foreground: 220 14% 80%;
+
+    --muted: 224 14% 16%;
+    --muted-foreground: 220 9% 55%;
+
+    --accent: 239 84% 62%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 65% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 224 12% 20%;
+    --input: 224 12% 20%;
+    --ring: 239 84% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  /* Card hover lift */
+  .card-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+  .card-hover:hover {
+    @apply -translate-y-0.5 shadow-md;
+  }
+
+  /* Fade in */
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out both;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Staggered children */
+  .stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+}

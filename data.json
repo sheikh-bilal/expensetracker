@@ -1,0 +1,157 @@
+[
+  {
+    "description": "Internet Bill",
+    "amount": 2800,
+    "category": "bills",
+    "paymentMethod": "cash",
+    "date": "2026-03-02T00:00:00.000Z",
+    "billDetails": {
+      "department": "INTERNET",
+      "month": "March"
+    }
+  },
+  {
+    "description": "Burger",
+    "amount": 720,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-02T00:00:00.000Z"
+  },
+  {
+    "description": "Shampoo",
+    "amount": 500,
+    "category": "health",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Hair Cutting",
+    "amount": 500,
+    "category": "health",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Papa Profit Cut",
+    "amount": 5000,
+    "category": "other",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Electricity Bill",
+    "amount": 4000,
+    "category": "bills",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z",
+    "billDetails": {
+      "department": "WAPDA",
+      "month": "March"
+    }
+  },
+  {
+    "description": "Petrol",
+    "amount": 500,
+    "category": "transport",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Pet Food",
+    "amount": 1500,
+    "category": "other",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Petrol",
+    "amount": 2000,
+    "category": "transport",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Snacks",
+    "amount": 300,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Bike Helmet",
+    "amount": 5500,
+    "category": "transport",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Loan Return",
+    "amount": 2800,
+    "category": "other",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Food",
+    "amount": 1400,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Burger",
+    "amount": 620,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Eidi Gift (Wife)",
+    "amount": 20000,
+    "category": "other",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Shoes",
+    "amount": 5000,
+    "category": "shopping",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Petrol",
+    "amount": 4000,
+    "category": "transport",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Bottles",
+    "amount": 1000,
+    "category": "other",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Stitching Eid Clothes",
+    "amount": 3000,
+    "category": "shopping",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Food",
+    "amount": 3000,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  },
+  {
+    "description": "Pizza",
+    "amount": 2000,
+    "category": "food",
+    "paymentMethod": "cash",
+    "date": "2026-03-03T00:00:00.000Z"
+  }
+]

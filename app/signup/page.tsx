@@ -16,6 +16,7 @@ import {
   Shield,
   CheckCircle2,
 } from "lucide-react";
+import { Toaster, useToast } from "@/components/ui/toast";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -27,22 +28,26 @@ export default function SignupPage() {
   });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
-    const result = await signup(
-      new FormData(e.currentTarget as HTMLFormElement),
-    );
+    const result = await signup(new FormData(e.currentTarget));
 
     if (result?.error) {
       setErrors(result.error);
+      const msg = Object.values(result.error).flat()[0];
+      toast.error("Registration failed", msg);
       setIsLoading(false);
     } else if (result?.success) {
-      router.push("/dashboard");
-      router.refresh();
+      toast.success("Account created!", "Welcome to ExpenseTrack.");
+      setTimeout(() => {
+        router.push("/dashboard");
+        router.refresh();
+      }, 800);
     }
   }
 
@@ -71,6 +76,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/40 flex items-center justify-center p-4 relative overflow-hidden">
+      <Toaster toasts={toasts} removeToast={removeToast} />
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />

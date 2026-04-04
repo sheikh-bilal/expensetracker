@@ -7,32 +7,40 @@ import { login } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wallet, Mail, Lock, ArrowRight, Shield, CheckCircle2 } from "lucide-react";
+import { Wallet, Mail, Lock, ArrowRight, Shield } from "lucide-react";
+import { Toaster, useToast } from "@/components/ui/toast";
 
 export default function LoginPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
+  const { toasts, removeToast, toast } = useToast();
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setErrors({});
 
-    const result = await login(new FormData(e.currentTarget as HTMLFormElement));
+    const result = await login(new FormData(e.currentTarget));
 
     if (result?.error) {
       setErrors(result.error);
+      const msg = Object.values(result.error).flat()[0];
+      toast.error("Login failed", msg);
       setIsLoading(false);
     } else if (result?.success) {
-      router.push("/dashboard");
-      router.refresh();
+      toast.success("Welcome back!", "Redirecting to your dashboard...");
+      setTimeout(() => {
+        router.push("/dashboard");
+        router.refresh();
+      }, 500);
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/40 flex items-center justify-center p-4 relative overflow-hidden">
+      <Toaster toasts={toasts} removeToast={removeToast} />
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
@@ -44,8 +52,12 @@ export default function LoginPage() {
             <Wallet className="h-7 w-7" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">ExpenseTrack</h1>
-            <p className="text-xs text-gray-500 font-medium">Smart Expense Tracking</p>
+            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+              ExpenseTrack
+            </h1>
+            <p className="text-xs text-gray-500 font-medium">
+              Smart Expense Tracking
+            </p>
           </div>
         </div>
 
@@ -53,17 +65,25 @@ export default function LoginPage() {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-100/80 p-8">
           <div className="mb-8">
             <h2 className="text-xl font-bold text-gray-900">Welcome back</h2>
-            <p className="text-sm text-gray-500 mt-1.5">Enter your credentials to access your account</p>
+            <p className="text-sm text-gray-500 mt-1.5">
+              Enter your credentials to access your account
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Field */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <Label
+                htmlFor="email"
+                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+              >
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" strokeWidth={2} />
+                <Mail
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  strokeWidth={2}
+                />
                 <Input
                   id="email"
                   name="email"
@@ -71,7 +91,9 @@ export default function LoginPage() {
                   placeholder="you@example.com"
                   className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -85,11 +107,17 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+              <Label
+                htmlFor="password"
+                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+              >
                 Password
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" strokeWidth={2} />
+                <Lock
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  strokeWidth={2}
+                />
                 <Input
                   id="password"
                   name="password"
@@ -97,7 +125,9 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -153,7 +183,9 @@ export default function LoginPage() {
         {/* Security Badge */}
         <div className="flex items-center justify-center gap-2 mt-8 text-gray-500">
           <Shield className="h-4 w-4 text-emerald-600" strokeWidth={2} />
-          <p className="text-xs font-medium">Protected by industry-standard encryption</p>
+          <p className="text-xs font-medium">
+            Protected by industry-standard encryption
+          </p>
         </div>
       </div>
     </div>

@@ -110,7 +110,10 @@ export function Header() {
             </div>
             <DropdownMenuSeparator className="mx-1" />
             <div className="p-1">
-              <DropdownMenuItem className="rounded-md py-2 px-2.5 cursor-pointer text-sm font-medium gap-2">
+              <DropdownMenuItem
+                onClick={() => router.push("/profile")}
+                className="rounded-md py-2 px-2.5 cursor-pointer text-sm font-medium gap-2"
+              >
                 <User className="h-4 w-4" />
                 Profile
               </DropdownMenuItem>

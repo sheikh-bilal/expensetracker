@@ -7,6 +7,7 @@ import { getUserSettings } from "@/actions/settings";
 import {
   CATEGORY_CONFIG,
   CATEGORY_LABELS,
+  CATEGORY_COLORS,
   CURRENCY_SYMBOLS,
   type ExpenseCategory,
 } from "@/lib/constants/expense";
@@ -18,7 +19,8 @@ import {
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
 import {
-  Wallet, PiggyBank, TrendingDown, Settings, Loader2, AlertTriangle, CheckCircle2,
+  Wallet, PiggyBank, TrendingDown, Settings, Loader2, AlertTriangle,
+  CheckCircle2, Zap, Target, ArrowRight, Calendar, ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -217,120 +219,245 @@ export default function BudgetsPage() {
             </div>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Category breakdown */}
-            <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-              <div className="p-5 border-b border-border/50">
-                <h2 className="text-sm font-bold text-foreground">Spending This Month</h2>
-                <p className="text-xs text-muted-foreground">By category</p>
+          {/* ── Budget Health Score ── */}
+          <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Budget Health</h2>
+                <p className="text-sm text-muted-foreground">Key metrics for {now.toLocaleString("default", { month: "long" })}</p>
               </div>
-              <div className="p-4 space-y-1">
-                {categoryBreakdown.length > 0 ? categoryBreakdown.map(({ category, amount }) => {
+              <Link href="/settings" className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                <Settings className="h-3.5 w-3.5" />
+                Edit Goals
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+            <div className="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                {
+                  label: "Daily Budget",
+                  value: `${symbol}${Math.round(monthlyBudget / 30).toLocaleString()}`,
+                  sub: "per day avg",
+                  icon: Calendar,
+                  color: "text-indigo-600",
+                  bg: "bg-indigo-50",
+                },
+                {
+                  label: "Daily Remaining",
+                  value: dailyBudget > 0 ? `${symbol}${Math.round(dailyBudget).toLocaleString()}` : "—",
+                  sub: daysRemaining > 0 ? `${daysRemaining} days left` : "Month ends today",
+                  icon: Zap,
+                  color: dailyBudget > 0 ? "text-amber-600" : "text-muted-foreground",
+                  bg: "bg-amber-50",
+                },
+                {
+                  label: "Savings Target",
+                  value: `${symbol}${savingsTarget.toLocaleString()}`,
+                  sub: `${savingsGoal}% of budget`,
+                  icon: Target,
+                  color: "text-emerald-600",
+                  bg: "bg-emerald-50",
+                },
+                {
+                  label: "Spend Allocation",
+                  value: `${100 - savingsGoal}%`,
+                  sub: `${symbol}${(monthlyBudget - savingsTarget).toLocaleString()} / mo`,
+                  icon: TrendingDown,
+                  color: "text-violet-600",
+                  bg: "bg-violet-50",
+                },
+              ].map(({ label, value, sub, icon: Icon, color, bg }) => (
+                <div key={label} className="group flex flex-col gap-3 p-4 rounded-xl border hover:shadow-xl transition-all duration-200">
+                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", bg)}>
+                    <Icon className={cn("h-4.5 w-4.5", color)} strokeWidth={2} />
+                  </div>
+                  <div>
+                    <p className="text-lg font-black text-foreground tabular-nums">{value}</p>
+                    <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mt-0.5">{label}</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Spending This Month + Savings Side by Side ── */}
+          <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
+            {/* Category breakdown — ranked */}
+            <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
+              <div className="p-6 border-b border-border/50 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-foreground">Spending This Month</h2>
+                  <p className="text-sm text-muted-foreground">Ranked by amount — {now.toLocaleString("default", { month: "long" })}</p>
+                </div>
+                {categoryBreakdown.length > 0 && (
+                  <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg">
+                    {categoryBreakdown.length} categories
+                  </span>
+                )}
+              </div>
+              <div className="divide-y divide-border/40">
+                {categoryBreakdown.length > 0 ? categoryBreakdown.map(({ category, amount }, idx) => {
                   const cfg = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG.other;
                   const Icon = cfg.icon;
-                  const pct = monthlyBudget > 0 ? (amount / monthlyBudget) * 100 : 0;
+                  const fill = CATEGORY_COLORS[category] ?? CATEGORY_COLORS.other;
                   const ofSpend = monthlySpent > 0 ? Math.round((amount / monthlySpent) * 100) : 0;
+                  const ofBudget = monthlyBudget > 0 ? Math.round((amount / monthlyBudget) * 100) : 0;
+                  const txCount = thisMonthExpenses.filter((e) => e.category === category).length;
+                  const isTop = idx === 0;
                   return (
-                    <div key={category} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/40 transition-colors">
-                      <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg shrink-0", cfg.bg)}>
-                        <Icon className={cn("h-4 w-4", cfg.color)} strokeWidth={2} />
+                    <div
+                      key={category}
+                      className={cn(
+                        "group flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors duration-150",
+                        isTop && "bg-gradient-to-r from-indigo-50/60 to-transparent",
+                      )}
+                    >
+                      <div className={cn(
+                        "flex h-7 w-7 items-center justify-center rounded-full text-xs font-black shrink-0 tabular-nums",
+                        isTop ? "bg-indigo-600 text-white shadow-md shadow-indigo-300"
+                          : idx === 1 ? "bg-slate-200 text-slate-600"
+                            : idx === 2 ? "bg-amber-100 text-amber-700"
+                              : "bg-muted text-muted-foreground",
+                      )}>{idx + 1}</div>
+                      <div
+                        className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-105"
+                        style={{ backgroundColor: `${fill}15`, border: `1.5px solid ${fill}30` }}
+                      >
+                        <Icon className="h-5 w-5" style={{ color: fill }} strokeWidth={2} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-semibold text-foreground">
-                            {CATEGORY_LABELS[category] ?? category}
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-bold text-foreground tabular-nums">
-                              {symbol}{amount.toLocaleString()}
-                            </span>
-                            <span className="text-xs text-muted-foreground w-8 text-right tabular-nums">
-                              {ofSpend}%
-                            </span>
+                        <div className="flex items-center justify-between mb-1.5 gap-2">
+                          <span className="text-sm font-semibold text-foreground">{CATEGORY_LABELS[category] ?? category}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[11px] text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-md font-medium">{txCount} tx</span>
+                            <span className="text-sm font-bold text-foreground tabular-nums">{symbol}{amount.toLocaleString()}</span>
                           </div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div className="h-2 rounded-full bg-muted overflow-hidden">
                           <div
-                            className={cn("h-full rounded-full transition-all duration-700", cfg.color.replace("text-", "bg-"))}
-                            style={{ width: `${Math.min(pct, 100)}%` }}
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${ofSpend}%`, background: `linear-gradient(90deg, ${fill}cc, ${fill})`, boxShadow: `0 0 6px ${fill}50` }}
                           />
                         </div>
                       </div>
+                      <div
+                        className="hidden sm:flex items-center justify-center h-9 w-14 rounded-xl text-xs font-black tabular-nums shrink-0"
+                        style={{ backgroundColor: `${fill}12`, color: fill, border: `1.5px solid ${fill}25` }}
+                      >{ofBudget}%</div>
                     </div>
                   );
                 }) : (
-                  <div className="py-8 text-center">
+                  <div className="py-12 flex flex-col items-center gap-2 text-center">
+                    <div className="h-12 w-12 rounded-2xl bg-muted/50 flex items-center justify-center">
+                      <Wallet className="h-6 w-6 text-muted-foreground/40" strokeWidth={1.5} />
+                    </div>
                     <p className="text-sm text-muted-foreground">No expenses this month</p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Savings tracker */}
-            <div className="space-y-4">
+            {/* Savings + Spending Pace stacked */}
+            <div className="space-y-5">
+              {/* Savings Goal */}
               <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-                <div className="p-5 border-b border-border/50 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50">
-                    <PiggyBank className="h-5 w-5 text-emerald-600" strokeWidth={2} />
+                <div className="p-5 border-b border-border/50 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50">
+                      <PiggyBank className="h-5 w-5 text-emerald-600" strokeWidth={2} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">Savings Goal</p>
+                      <p className="text-xs text-muted-foreground">{savingsGoal}% of monthly budget</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-foreground">Savings Goal</p>
-                    <p className="text-xs text-muted-foreground">Target: {savingsGoal}% of budget</p>
-                  </div>
+                  {savingsPct >= 100 && (
+                    <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2 py-1 rounded-lg">
+                      <ShieldCheck className="h-3.5 w-3.5" /> Done
+                    </div>
+                  )}
                 </div>
                 <div className="p-5 space-y-4">
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1">Actual Savings</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Actual Savings</p>
                       <p className={cn("text-2xl font-black tabular-nums", actualSavings > 0 ? "text-emerald-600" : "text-rose-500")}>
                         {symbol}{actualSavings.toLocaleString()}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs text-muted-foreground mb-1">Target</p>
-                      <p className="text-lg font-bold text-foreground tabular-nums">
-                        {symbol}{savingsTarget.toLocaleString()}
-                      </p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Target</p>
+                      <p className="text-lg font-bold text-foreground tabular-nums">{symbol}{savingsTarget.toLocaleString()}</p>
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>{savingsPct.toFixed(0)}% of goal</span>
-                      <span className={savingsPct >= 100 ? "text-emerald-600 font-semibold" : ""}>
-                        {savingsPct >= 100 ? "Goal reached!" : `${symbol}${Math.max(savingsTarget - actualSavings, 0).toLocaleString()} to go`}
-                      </span>
-                    </div>
-                    <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                    <div className="h-3 rounded-full bg-muted overflow-hidden">
                       <div
-                        className={cn("h-full rounded-full transition-all", savingsPct >= 100 ? "bg-emerald-500" : "bg-emerald-400")}
-                        style={{ width: `${savingsPct}%` }}
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${savingsPct}%`,
+                          background: savingsPct >= 100 ? "linear-gradient(90deg, #10b981, #34d399)" : "linear-gradient(90deg, #6ee7b7, #10b981)",
+                          boxShadow: "0 0 8px #10b98150",
+                        }}
                       />
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground font-medium">{savingsPct.toFixed(0)}% of goal</span>
+                      <span className={cn("font-semibold", savingsPct >= 100 ? "text-emerald-600" : "text-muted-foreground")}>
+                        {savingsPct >= 100 ? "🎉 Goal reached!" : `${symbol}${Math.max(savingsTarget - actualSavings, 0).toLocaleString()} to go`}
+                      </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Quick stats */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] p-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 mb-3">
-                    <TrendingDown className="h-4 w-4 text-amber-600" strokeWidth={2} />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-medium">Expenses Allocation</p>
-                  <p className="text-xl font-black text-foreground mt-0.5">{100 - savingsGoal}%</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {symbol}{(monthlyBudget - savingsTarget).toLocaleString()} / mo
-                  </p>
+              {/* Spending Pace */}
+              <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
+                <div className="p-5 border-b border-border/50">
+                  <p className="text-sm font-bold text-foreground">Spending Pace</p>
+                  <p className="text-xs text-muted-foreground">Projected end-of-month spend</p>
                 </div>
-                <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] p-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 mb-3">
-                    <Wallet className="h-4 w-4 text-indigo-600" strokeWidth={2} />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-medium">Daily Allowance</p>
-                  <p className="text-xl font-black text-foreground mt-0.5">
-                    {symbol}{Math.round(monthlyBudget / 30).toLocaleString()}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">per day avg</p>
+                <div className="p-5 space-y-3">
+                  {(() => {
+                    const daysPassed = now.getDate();
+                    const dailyRate = daysPassed > 0 ? monthlySpent / daysPassed : 0;
+                    const projected = Math.round(dailyRate * daysInMonth);
+                    const projectedPct = monthlyBudget > 0 ? Math.min((projected / monthlyBudget) * 100, 100) : 0;
+                    const isOnTrack = projected <= monthlyBudget;
+                    return (
+                      <>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground mb-1">Projected Total</p>
+                            <p className={cn("text-2xl font-black tabular-nums", isOnTrack ? "text-foreground" : "text-rose-500")}>
+                              {symbol}{projected.toLocaleString()}
+                            </p>
+                          </div>
+                          <span className={cn(
+                            "flex items-center gap-1 text-xs font-bold px-2.5 py-1.5 rounded-xl mb-1",
+                            isOnTrack ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100",
+                          )}>
+                            {isOnTrack ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
+                            {isOnTrack ? "On Track" : "Over Pace"}
+                          </span>
+                        </div>
+                        <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{
+                              width: `${projectedPct}%`,
+                              background: isOnTrack ? "linear-gradient(90deg, #818cf8, #6366f1)" : "linear-gradient(90deg, #fb7185, #f43f5e)",
+                              boxShadow: isOnTrack ? "0 0 6px #6366f150" : "0 0 6px #f43f5e50",
+                            }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Spending {symbol}{Math.round(dailyRate).toLocaleString()}/day · Budget {symbol}{Math.round(monthlyBudget / daysInMonth).toLocaleString()}/day
+                        </p>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -338,11 +465,23 @@ export default function BudgetsPage() {
 
           {/* Monthly history chart */}
           <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="p-6 border-b border-border/50">
-              <h2 className="text-base font-bold text-foreground">Budget History</h2>
-              <p className="text-sm text-muted-foreground">
-                Last 6 months · Budget line at {symbol}{monthlyBudget.toLocaleString()}
-              </p>
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Budget History</h2>
+                <p className="text-sm text-muted-foreground">
+                  Last 6 months vs. {symbol}{monthlyBudget.toLocaleString()} budget
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-indigo-500" />
+                  <span className="text-xs text-muted-foreground font-medium">Within budget</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="h-2.5 w-2.5 rounded-full bg-rose-500" />
+                  <span className="text-xs text-muted-foreground font-medium">Over budget</span>
+                </div>
+              </div>
             </div>
             <div className="p-6">
               <ResponsiveContainer width="100%" height={240}>

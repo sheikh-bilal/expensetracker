@@ -20,7 +20,7 @@ import { PieChart as PieChartIcon, TrendingUp, Receipt, Calendar, BarChart3, Loa
 
 type Expense = { _id: string; amount: number; date: string; category: string };
 
-const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function BarTooltip({ active, payload, label, symbol }: any) {
   if (!active || !payload?.length) return null;
@@ -232,89 +232,190 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Category Breakdown */}
+      {/* Category Breakdown — full redesign */}
       {categoryData.length > 0 ? (
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Donut chart */}
+        <div className="space-y-6">
+
+          {/* ── Spending by Category (Donut + Legend) ── */}
           <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="p-6 border-b border-border/50">
-              <h2 className="text-base font-bold text-foreground">Spending by Category</h2>
-              <p className="text-sm text-muted-foreground">{selectedYear} category distribution</p>
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Spending by Category</h2>
+                <p className="text-sm text-muted-foreground">{selectedYear} distribution across {categoryData.length} categories</p>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-violet-50 border border-violet-100">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-xs font-semibold text-green-700">{categoryData.length} Active</span>
+              </div>
             </div>
-            <div className="p-6 flex items-center justify-center">
-              <div className="relative w-[220px] h-[220px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={68}
-                      outerRadius={105}
-                      paddingAngle={3}
-                      dataKey="amount"
-                      nameKey="name"
-                      startAngle={90}
-                      endAngle={-270}
-                      stroke="none"
-                    >
-                      {categoryData.map((entry, i) => (
-                        <Cell
-                          key={i}
-                          fill={entry.fill}
-                          style={{ filter: `drop-shadow(0px 2px 6px ${entry.fill}50)` }}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<PieTooltip symbol={symbol} />} cursor={{ fill: "transparent" }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Total</p>
-                  <p className="text-xl font-black text-foreground tabular-nums">
-                    {symbol}{totalSpent >= 1000 ? `${(totalSpent / 1000).toFixed(1)}k` : totalSpent.toLocaleString()}
-                  </p>
+
+            <div className="p-6 grid lg:grid-cols-[auto_1fr] gap-8 items-center">
+              {/* Donut chart */}
+              <div className="flex items-center justify-center">
+                <div className="relative w-[200px] h-[200px] shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={64}
+                        outerRadius={98}
+                        paddingAngle={2}
+                        dataKey="amount"
+                        nameKey="name"
+                        startAngle={90}
+                        endAngle={-270}
+                        stroke="none"
+                      >
+                        {categoryData.map((entry, i) => (
+                          <Cell
+                            key={i}
+                            fill={entry.fill}
+                            style={{ filter: `drop-shadow(0px 3px 8px ${entry.fill}60)` }}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<PieTooltip symbol={symbol} />} cursor={{ fill: "transparent" }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center label */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-0.5">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">Total</p>
+                    <p className="text-lg font-black text-foreground tabular-nums leading-tight">
+                      {symbol}{totalSpent >= 1000 ? `${(totalSpent / 1000).toFixed(1)}k` : totalSpent.toLocaleString()}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground font-medium">{selectedYear}</p>
+                  </div>
                 </div>
+              </div>
+
+              {/* Legend grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {categoryData.map(({ category, name, amount, percentage, fill }) => {
+                  const cfg = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG.other;
+                  const Icon = cfg.icon;
+                  return (
+                    <div
+                      key={category}
+                      className="group flex items-center gap-2.5 p-2.5 rounded-xl border border-transparent hover:border-border/60 hover:bg-muted/30 transition-all duration-200 cursor-default"
+                    >
+                      {/* Color swatch + icon */}
+                      <div
+                        className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0 transition-transform duration-200 group-hover:scale-110"
+                        style={{ backgroundColor: `${fill}18`, border: `1.5px solid ${fill}35` }}
+                      >
+                        <Icon className="h-3.5 w-3.5" style={{ color: fill }} strokeWidth={2.2} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-xs font-semibold text-foreground truncate">{name}</span>
+                          <span className="text-xs font-bold tabular-nums shrink-0" style={{ color: fill }}>{percentage}%</span>
+                        </div>
+                        <div className="mt-1 h-1 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${percentage}%`, backgroundColor: fill }}
+                          />
+                        </div>
+                        <p className="mt-0.5 text-[10px] text-muted-foreground tabular-nums font-medium">
+                          {symbol}{amount.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
 
-          {/* Category list */}
+          {/* ── Category Breakdown (ranked list) ── */}
           <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-            <div className="p-6 border-b border-border/50">
-              <h2 className="text-base font-bold text-foreground">Category Breakdown</h2>
-              <p className="text-sm text-muted-foreground">Amount spent per category</p>
+            <div className="p-6 border-b border-border/50 flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold text-foreground">Category Breakdown</h2>
+                <p className="text-sm text-muted-foreground">Ranked by total spend — {selectedYear}</p>
+              </div>
+              <span className="text-xs font-semibold text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-lg">
+                {categoryData.length} categories
+              </span>
             </div>
-            <div className="p-4 space-y-1">
-              {categoryData.map(({ category, name, amount, percentage, fill }) => {
+
+            <div className="divide-y divide-border/40">
+              {categoryData.map(({ category, name, amount, percentage, fill }, idx) => {
                 const cfg = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG.other;
                 const Icon = cfg.icon;
+                const txCount = yearExpenses.filter((e) => e.category === category).length;
+                const isTop = idx === 0;
+
                 return (
                   <div
                     key={category}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/40 transition-colors"
+                    className={cn(
+                      "group flex items-center gap-4 px-6 py-4 hover:bg-muted/20 transition-colors duration-150",
+                      isTop && "bg-gradient-to-r from-violet-50/60 to-transparent"
+                    )}
                   >
-                    <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg shrink-0", cfg.bg)}>
-                      <Icon className={cn("h-4 w-4", cfg.color)} strokeWidth={2} />
+                    {/* Rank */}
+                    <div
+                      className={cn(
+                        "flex h-7 w-7 items-center justify-center rounded-full text-xs font-black shrink-0 tabular-nums",
+                        isTop
+                          ? "bg-violet-600 text-white shadow-md shadow-violet-300"
+                          : idx === 1
+                            ? "bg-slate-200 text-slate-600"
+                            : idx === 2
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {idx + 1}
                     </div>
+
+                    {/* Icon */}
+                    <div
+                      className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-105"
+                      style={{ backgroundColor: `${fill}15`, border: `1.5px solid ${fill}30` }}
+                    >
+                      <Icon className="h-5 w-5" style={{ color: fill }} strokeWidth={2} />
+                    </div>
+
+                    {/* Name + progress */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center justify-between mb-1.5 gap-2">
                         <span className="text-sm font-semibold text-foreground">{name}</span>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-[11px] text-muted-foreground bg-muted/70 px-2 py-0.5 rounded-md font-medium">
+                            {txCount} tx
+                          </span>
                           <span className="text-sm font-bold text-foreground tabular-nums">
                             {symbol}{amount.toLocaleString()}
                           </span>
-                          <span className="text-xs text-muted-foreground w-8 text-right tabular-nums">
-                            {percentage}%
-                          </span>
                         </div>
                       </div>
-                      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      {/* Progress bar */}
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
                         <div
                           className="h-full rounded-full transition-all duration-700"
-                          style={{ width: `${percentage}%`, backgroundColor: fill }}
+                          style={{
+                            width: `${percentage}%`,
+                            background: `linear-gradient(90deg, ${fill}cc, ${fill})`,
+                            boxShadow: `0 0 6px ${fill}60`,
+                          }}
                         />
                       </div>
+                    </div>
+
+                    {/* Percentage badge */}
+                    <div
+                      className="hidden sm:flex items-center justify-center h-9 w-14 rounded-xl text-xs font-black tabular-nums shrink-0 transition-transform duration-200 group-hover:scale-105"
+                      style={{
+                        backgroundColor: `${fill}12`,
+                        color: fill,
+                        border: `1.5px solid ${fill}25`,
+                      }}
+                    >
+                      {percentage}%
                     </div>
                   </div>
                 );

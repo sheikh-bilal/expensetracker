@@ -7,18 +7,31 @@ import {
   CATEGORY_LABELS,
   CATEGORY_COLORS,
   CURRENCY_SYMBOLS,
+  BILL_TYPE_LABELS,
   type ExpenseCategory,
+  type BillType,
 } from "@/lib/constants/expense";
+import { METER_CONFIG } from "@/lib/constants/meter";
 import { useCurrency } from "@/lib/currency-context";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, PieChart, Pie,
+  ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line,
+  Area, AreaChart, ReferenceLine,
 } from "recharts";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
-import { PieChart as PieChartIcon, TrendingUp, Receipt, Calendar, BarChart3, Loader2 } from "lucide-react";
+import {
+  PieChart as PieChartIcon, TrendingUp, TrendingDown, Receipt,
+  Calendar, BarChart3, Loader2, Zap, Droplets, Flame, Wifi, FileText,
+} from "lucide-react";
 
-type Expense = { _id: string; amount: number; date: string; category: string };
+type Expense = {
+  _id: string;
+  amount: number;
+  date: string;
+  category: string;
+  billDetails?: { billType?: string };
+};
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -41,6 +54,32 @@ function PieTooltip({ active, payload, symbol }: any) {
     </div>
   );
 }
+
+function BillLineTooltip({ active, payload, label, symbol }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl border border-border bg-white px-3.5 py-2.5 shadow-xl">
+      <p className="text-xs font-semibold text-muted-foreground mb-1">{label}</p>
+      <p className="text-sm font-bold text-foreground">{symbol}{payload[0].value.toLocaleString()}</p>
+    </div>
+  );
+}
+
+const BILL_ICON_MAP: Record<string, React.ElementType> = {
+  electricity: Zap,
+  water: Droplets,
+  gas: Flame,
+  internet: Wifi,
+  other: FileText,
+};
+
+const BILL_COLOR_MAP: Record<string, { line: string; gradient: [string, string]; badge: string; light: string }> = {
+  electricity: { line: "#f59e0b", gradient: ["#fef3c7", "#fde68a"], badge: "bg-amber-100 text-amber-700", light: "#fef3c7" },
+  water:       { line: "#3b82f6", gradient: ["#dbeafe", "#bfdbfe"], badge: "bg-blue-100 text-blue-700",  light: "#dbeafe" },
+  gas:         { line: "#ef4444", gradient: ["#fee2e2", "#fecaca"], badge: "bg-rose-100 text-rose-700",  light: "#fee2e2" },
+  internet:    { line: "#8b5cf6", gradient: ["#ede9fe", "#ddd6fe"], badge: "bg-violet-100 text-violet-700", light: "#ede9fe" },
+  other:       { line: "#64748b", gradient: ["#f1f5f9", "#e2e8f0"], badge: "bg-slate-100 text-slate-700", light: "#f1f5f9" },
+};
 
 export default function ReportsPage() {
   const { currency } = useCurrency();
@@ -94,6 +133,36 @@ export default function ReportsPage() {
         fill: CATEGORY_COLORS[cat as ExpenseCategory] ?? CATEGORY_COLORS.other,
       }))
       .sort((a, b) => b.amount - a.amount);
+  }, [yearExpenses]);
+
+  // Bills per type, per month — only bill-category expenses with a billType
+  const billsData = useMemo(() => {
+    const billExpenses = yearExpenses.filter(
+      (e) => e.category === "bills" && e.billDetails?.billType,
+    );
+    // Group by billType
+    const byType: Record<string, { month: string; amount: number; idx: number }[]> = {};
+    billExpenses.forEach((e) => {
+      const bt = e.billDetails!.billType!;
+      if (!byType[bt]) byType[bt] = MONTHS.map((m, i) => ({ month: m, amount: 0, idx: i }));
+      const monthIdx = new Date(e.date).getMonth();
+      byType[bt][monthIdx].amount += e.amount;
+    });
+    // Remove empty types (all months = 0)
+    return Object.entries(byType)
+      .filter(([, months]) => months.some((m) => m.amount > 0))
+      .map(([billType, months]) => {
+        const activeMonths = months.filter((m) => m.amount > 0);
+        const total = activeMonths.reduce((s, m) => s + m.amount, 0);
+        const avg = activeMonths.length > 0 ? Math.round(total / activeMonths.length) : 0;
+        // Trend: compare last 2 active months
+        const sorted = activeMonths.sort((a, b) => a.idx - b.idx);
+        const last = sorted[sorted.length - 1]?.amount ?? 0;
+        const prev = sorted[sorted.length - 2]?.amount ?? 0;
+        const trendPct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
+        return { billType, months, total, avg, trendPct };
+      })
+      .sort((a, b) => b.total - a.total);
   }, [yearExpenses]);
 
   const totalSpent = yearExpenses.reduce((s, e) => s + e.amount, 0);
@@ -231,6 +300,146 @@ export default function ReportsPage() {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* ── Bills Trend Section ── */}
+      {billsData.length > 0 && (
+        <div className="space-y-4">
+          {/* Section header */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-orange-500 text-white shadow-md shadow-rose-500/25">
+              <Zap className="h-5 w-5" strokeWidth={2.2} />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-foreground">Bills Overview</h2>
+              <p className="text-sm text-muted-foreground">Monthly trends per utility — {selectedYear}</p>
+            </div>
+            <div className="ml-auto flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-100">
+              <div className="h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+              <span className="text-xs font-semibold text-rose-700">{billsData.length} Utilit{billsData.length === 1 ? "y" : "ies"}</span>
+            </div>
+          </div>
+
+          {/* Grid of per-type charts */}
+          <div className={cn(
+            "grid gap-4",
+            billsData.length === 1 ? "grid-cols-1 max-w-lg" :
+            billsData.length === 2 ? "grid-cols-1 sm:grid-cols-2" :
+            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+          )}>
+            {billsData.map(({ billType, months, total, avg, trendPct }) => {
+              const Icon = BILL_ICON_MAP[billType] ?? FileText;
+              const colors = BILL_COLOR_MAP[billType] ?? BILL_COLOR_MAP.other;
+              const label = BILL_TYPE_LABELS[billType as BillType] ?? billType;
+              const isUp = trendPct > 0;
+              const isFlat = trendPct === 0;
+              const maxAmt = Math.max(...months.map((m) => m.amount), 1);
+              // Only show months up to current month if current year
+              const visibleMonths = selectedYear === new Date().getFullYear()
+                ? months.slice(0, new Date().getMonth() + 1)
+                : months;
+              const activeCount = visibleMonths.filter((m) => m.amount > 0).length;
+
+              return (
+                <div
+                  key={billType}
+                  className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.06)] overflow-hidden group hover:shadow-[0_4px_20px_0_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.06)] transition-shadow duration-300"
+                >
+                  {/* Card header */}
+                  <div className="px-5 pt-5 pb-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0 transition-transform duration-200 group-hover:scale-105"
+                          style={{ backgroundColor: colors.light, border: `1.5px solid ${colors.line}30` }}
+                        >
+                          <Icon className="h-5 w-5" style={{ color: colors.line }} strokeWidth={2.2} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{label}</p>
+                          <p className="text-xs text-muted-foreground">{activeCount} active month{activeCount !== 1 ? "s" : ""}</p>
+                        </div>
+                      </div>
+                      {/* Trend badge */}
+                      {!isFlat && (
+                        <div className={cn(
+                          "flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold shrink-0",
+                          isUp ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-600"
+                        )}>
+                          {isUp
+                            ? <TrendingUp className="h-3 w-3" strokeWidth={2.5} />
+                            : <TrendingDown className="h-3 w-3" strokeWidth={2.5} />}
+                          {Math.abs(trendPct)}%
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Total + avg */}
+                    <div className="mt-3 flex items-baseline gap-3">
+                      <span className="text-xl font-black text-foreground tabular-nums">
+                        {symbol}{total.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        avg {symbol}{avg.toLocaleString()}/mo
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Inline area chart */}
+                  <div className="px-2 pb-4">
+                    <ResponsiveContainer width="100%" height={110}>
+                      <AreaChart data={visibleMonths} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id={`grad-${billType}`} x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor={colors.line} stopOpacity={0.18} />
+                            <stop offset="100%" stopColor={colors.line} stopOpacity={0.01} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.5} />
+                        <XAxis
+                          dataKey="month"
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9, fontWeight: 500 }}
+                          dy={6}
+                          interval={visibleMonths.length > 6 ? 1 : 0}
+                        />
+                        <YAxis hide domain={[0, maxAmt * 1.2]} />
+                        <Tooltip
+                          content={<BillLineTooltip symbol={symbol} />}
+                          cursor={{ stroke: colors.line, strokeWidth: 1, strokeDasharray: "4 2" }}
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="amount"
+                          stroke={colors.line}
+                          strokeWidth={2.2}
+                          fill={`url(#grad-${billType})`}
+                          dot={(props: any) => {
+                            const { cx, cy, payload } = props;
+                            if (!payload.amount) return <g key={props.key} />;
+                            return (
+                              <circle
+                                key={props.key}
+                                cx={cx}
+                                cy={cy}
+                                r={3}
+                                fill={colors.line}
+                                stroke="white"
+                                strokeWidth={1.5}
+                              />
+                            );
+                          }}
+                          activeDot={{ r: 5, fill: colors.line, stroke: "white", strokeWidth: 2 }}
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Category Breakdown — full redesign */}
       {categoryData.length > 0 ? (

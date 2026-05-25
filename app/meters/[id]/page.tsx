@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,7 +12,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getMeterById, deleteMeter, type Meter } from "@/actions/meters";
-import { getMeterReadings, type MeterReadingData } from "@/actions/meterReadings";
+import {
+  getMeterReadings,
+  type MeterReadingData,
+} from "@/actions/meterReadings";
 import {
   METER_TYPE_LABELS,
   METER_CONFIG,
@@ -20,7 +23,11 @@ import {
 } from "@/lib/constants/meter";
 import { cn } from "@/lib/utils";
 import { getTotalConsumption, getLatestReading } from "@/lib/utils/meter";
-import { ConfirmDialog, useConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  ConfirmDialog,
+  useConfirmDialog,
+} from "@/components/ui/confirm-dialog";
+import { CalculateBillDialog } from "@/components/ui/calculate-bill-dialog";
 import Link from "next/link";
 
 const YEAR_FILTER_LABELS = {
@@ -36,7 +43,14 @@ export default function MeterDetailPage() {
   const [readings, setReadings] = useState<MeterReadingData[]>([]);
   const [loading, setLoading] = useState(true);
   const [yearFilter, setYearFilter] = useState<string>("current");
-  const { dialog: deleteDialog, confirm: confirmDelete, handleConfirm: handleDeleteConfirm, handleCancel: handleDeleteCancel } = useConfirmDialog();
+  const {
+    dialog: deleteDialog,
+    confirm: confirmDelete,
+    handleConfirm: handleDeleteConfirm,
+    handleCancel: handleDeleteCancel,
+  } = useConfirmDialog();
+
+  const [calcOpen, setCalcOpen] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -134,25 +148,43 @@ export default function MeterDetailPage() {
             </p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-9 rounded-lg border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-4 w-4 mr-1.5" />
-          Delete
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+            onClick={() => setCalcOpen(true)}
+          >
+            <Calculator className="h-4 w-4 mr-1.5" />
+            Calculate Bill
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-9 rounded-lg border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+            onClick={handleDelete}
+          >
+            <Trash2 className="h-4 w-4 mr-1.5" />
+            Delete
+          </Button>
+        </div>
       </div>
 
       {/* Stats Overview */}
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           { label: "Total Readings", value: totalReadings, unit: null },
-          { label: "Total Consumed", value: totalUnits.toLocaleString(), unit: config.unit },
+          {
+            label: "Total Consumed",
+            value: totalUnits.toLocaleString(),
+            unit: config.unit,
+          },
           {
             label: "Latest Reading",
-            value: latestReadingValue !== null ? latestReadingValue.toLocaleString() : "—",
+            value:
+              latestReadingValue !== null
+                ? latestReadingValue.toLocaleString()
+                : "—",
             unit: null,
           },
         ].map(({ label, value, unit }) => (
@@ -167,14 +199,21 @@ export default function MeterDetailPage() {
               <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">
                 {label}
               </p>
-              <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center", config.bg)}>
+              <div
+                className={cn(
+                  "h-8 w-8 rounded-lg flex items-center justify-center",
+                  config.bg,
+                )}
+              >
                 <Icon className={cn("h-4 w-4", config.color)} strokeWidth={2} />
               </div>
             </div>
             <p className="text-3xl font-black text-foreground">
               {value}
               {unit && (
-                <span className="text-base font-medium text-muted-foreground ml-1">{unit}</span>
+                <span className="text-base font-medium text-muted-foreground ml-1">
+                  {unit}
+                </span>
               )}
             </p>
           </div>
@@ -184,25 +223,35 @@ export default function MeterDetailPage() {
       {/* Consumption Analysis */}
       <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="p-6 border-b border-border/50">
-          <h2 className="text-base font-bold text-foreground">Consumption Analysis</h2>
-          <p className="text-sm text-muted-foreground">Monthly consumption and cost trends</p>
+          <h2 className="text-base font-bold text-foreground">
+            Consumption Analysis
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Monthly consumption and cost trends
+          </p>
         </div>
         {readings.length === 0 ? (
           <div className="p-8 text-center">
             <p className="text-sm text-muted-foreground">
-              No readings recorded yet. Add your first reading to see the analysis.
+              No readings recorded yet. Add your first reading to see the
+              analysis.
             </p>
           </div>
         ) : (
           <div className="p-6 grid gap-4 sm:grid-cols-3">
             {readings.slice(0, 3).map((reading) => (
-              <div key={reading._id} className={cn("p-4 rounded-xl", config.bg)}>
+              <div
+                key={reading._id}
+                className={cn("p-4 rounded-xl", config.bg)}
+              >
                 <p className={cn("text-xs font-semibold mb-1", config.color)}>
                   {reading.month}
                 </p>
                 <p className="text-lg font-bold text-foreground">
                   {reading.units?.toLocaleString()}{" "}
-                  <span className="text-sm font-medium text-muted-foreground">{config.unit}</span>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {config.unit}
+                  </span>
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Reading: {reading.reading?.toLocaleString()}
@@ -217,13 +266,24 @@ export default function MeterDetailPage() {
       <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="p-6 border-b border-border/50 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-bold text-foreground">Reading History</h2>
-            <p className="text-sm text-muted-foreground">All recorded readings for this meter</p>
+            <h2 className="text-base font-bold text-foreground">
+              Reading History
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              All recorded readings for this meter
+            </p>
           </div>
-          <Select value={yearFilter} onValueChange={(v) => setYearFilter(v ?? "current")}>
+          <Select
+            value={yearFilter}
+            onValueChange={(v) => setYearFilter(v ?? "current")}
+          >
             <SelectTrigger className="h-9 w-40 rounded-lg">
               <SelectValue>
-                {(value) => YEAR_FILTER_LABELS[value as keyof typeof YEAR_FILTER_LABELS] ?? value}
+                {(value) =>
+                  YEAR_FILTER_LABELS[
+                    value as keyof typeof YEAR_FILTER_LABELS
+                  ] ?? value
+                }
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -245,7 +305,10 @@ export default function MeterDetailPage() {
         ) : (
           <div className="divide-y divide-border">
             {filteredReadings.map((reading) => (
-              <div key={reading._id} className="p-4 hover:bg-muted/50 transition-colors">
+              <div
+                key={reading._id}
+                className="p-4 hover:bg-muted/50 transition-colors"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div
@@ -259,7 +322,9 @@ export default function MeterDetailPage() {
                       </span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-foreground">{reading.month}</p>
+                      <p className="text-sm font-semibold text-foreground">
+                        {reading.month}
+                      </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(reading.createdAt || "").toLocaleDateString()}
                       </p>
@@ -270,10 +335,14 @@ export default function MeterDetailPage() {
                       {reading.reading?.toLocaleString()}
                     </p>
                     <div className="flex items-center gap-1.5 justify-end mt-0.5">
-                      <span className={cn("text-xs font-semibold", config.color)}>
+                      <span
+                        className={cn("text-xs font-semibold", config.color)}
+                      >
                         {reading.units?.toLocaleString()} {config.unit}
                       </span>
-                      <span className="text-xs text-muted-foreground">· meter reading</span>
+                      <span className="text-xs text-muted-foreground">
+                        · meter reading
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -285,9 +354,20 @@ export default function MeterDetailPage() {
 
       <ConfirmDialog
         open={deleteDialog.open}
-        onOpenChange={(open) => { if (!open) handleDeleteCancel(); }}
+        onOpenChange={(open) => {
+          if (!open) handleDeleteCancel();
+        }}
         onConfirm={handleDeleteConfirm}
         {...deleteDialog.config}
+      />
+
+      <CalculateBillDialog
+        open={calcOpen}
+        onOpenChange={setCalcOpen}
+        previousReading={latestReadingValue}
+        unit={config.unit}
+        colorClass={config.color}
+        gradientClass={config.gradient}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { PageLoader } from "@/components/ui/page-loader";
 import { getExpenses } from "@/actions/expenses";
 import {
   CATEGORY_CONFIG,
@@ -22,7 +23,7 @@ import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
 import {
   PieChart as PieChartIcon, TrendingUp, TrendingDown, Receipt,
-  Calendar, BarChart3, Loader2, Zap, Droplets, Flame, Wifi, FileText,
+  Calendar, BarChart3, Zap, Droplets, Flame, Wifi, FileText,
 } from "lucide-react";
 
 type Expense = {
@@ -174,13 +175,7 @@ export default function ReportsPage() {
   );
   const maxBar = Math.max(...monthlyData.map((m) => m.amount), 1);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="space-y-6 animate-fade-in p-2">

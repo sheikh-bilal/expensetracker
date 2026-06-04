@@ -8,6 +8,12 @@ export type Category =
   | "bills"
   | "health"
   | "education"
+  | "pets"
+  | "investment"
+  | "travel"
+  | "subscriptions"
+  | "loan"
+  | "gift"
   | "other";
 
 export interface Expense {

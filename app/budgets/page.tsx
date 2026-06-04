@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { PageLoader } from "@/components/ui/page-loader";
 import { getExpenses } from "@/actions/expenses";
 import { getMonthlyExpenses } from "@/actions/expenses";
 import { getUserSettings } from "@/actions/settings";
@@ -19,7 +20,7 @@ import {
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
 import {
-  Wallet, PiggyBank, TrendingDown, Settings, Loader2, AlertTriangle,
+  Wallet, PiggyBank, TrendingDown, Settings, AlertTriangle,
   CheckCircle2, Zap, Target, ArrowRight, Calendar, ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
@@ -104,13 +105,7 @@ export default function BudgetsPage() {
   const daysRemaining = daysInMonth - now.getDate();
   const dailyBudget = daysRemaining > 0 && remainingBudget > 0 ? remainingBudget / daysRemaining : 0;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="space-y-6 animate-fade-in p-2">

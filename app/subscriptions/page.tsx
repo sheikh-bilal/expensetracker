@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { PageLoader } from "@/components/ui/page-loader";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ import {
   Plus,
   Search,
   Trash2,
+  RefreshCw,
   ChevronLeft,
   ChevronRight,
   CreditCard,
@@ -43,6 +45,7 @@ import {
   getSubscriptions,
   createSubscription,
   deleteSubscription,
+  renewSubscription,
 } from "@/actions/dashboard";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
@@ -112,6 +115,7 @@ function getDaysUntil(date: Date): number {
 export default function SubscriptionsPage() {
   const [subscriptions, setSubscriptions] = useState<SubscriptionRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [renewingId, setRenewingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -128,6 +132,13 @@ export default function SubscriptionsPage() {
     const data = await getSubscriptions();
     setSubscriptions(data);
     setLoading(false);
+  }
+
+  async function handleRenewSubscription(id: string) {
+    setRenewingId(id);
+    await renewSubscription(id);
+    setRenewingId(null);
+    loadSubscriptions();
   }
 
   async function handleDeleteSubscription(id: string, name: string) {
@@ -276,12 +287,7 @@ export default function SubscriptionsPage() {
 
         {/* Table Content */}
         {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="flex flex-col items-center gap-2">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            </div>
-          </div>
+          <PageLoader />
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted mb-3">
@@ -380,16 +386,30 @@ export default function SubscriptionsPage() {
                           </span>
                         </TableCell>
 
-                        {/* Delete */}
-                        <TableCell className="py-3.5 w-14">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-50 text-muted-foreground hover:text-rose-600"
-                            onClick={() => handleDeleteSubscription(sub._id, sub.name)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        {/* Actions */}
+                        <TableCell className="py-3.5 w-24">
+                          <div className="flex items-center justify-end gap-1">
+                            {isPastDue && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                title="Renew to next month"
+                                className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-emerald-50 text-muted-foreground hover:text-emerald-600"
+                                disabled={renewingId === sub._id}
+                                onClick={() => handleRenewSubscription(sub._id)}
+                              >
+                                <RefreshCw className={cn("h-4 w-4", renewingId === sub._id && "animate-spin")} />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-50 text-muted-foreground hover:text-rose-600"
+                              onClick={() => handleDeleteSubscription(sub._id, sub.name)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

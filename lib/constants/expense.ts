@@ -9,6 +9,10 @@ import {
   PawPrint,
   TrendingUp,
   MoreHorizontal,
+  Plane,
+  Bell,
+  Landmark,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -23,6 +27,10 @@ export const EXPENSE_CATEGORIES = [
   "education",
   "pets",
   "investment",
+  "travel",
+  "subscriptions",
+  "loan",
+  "gift",
   "other",
 ] as const;
 
@@ -38,6 +46,10 @@ export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   education: "Education",
   pets: "Pets",
   investment: "Investment",
+  travel: "Travel",
+  subscriptions: "Subscriptions",
+  loan: "Loan",
+  gift: "Gift",
   other: "Other",
 };
 
@@ -99,6 +111,30 @@ export const CATEGORY_CONFIG: Record<
     bg: "bg-blue-50",
     color: "text-blue-600",
     badge: "bg-blue-100 text-blue-700 border-blue-200",
+  },
+  travel: {
+    icon: Plane,
+    bg: "bg-cyan-50",
+    color: "text-cyan-600",
+    badge: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  },
+  subscriptions: {
+    icon: Bell,
+    bg: "bg-purple-50",
+    color: "text-purple-600",
+    badge: "bg-purple-100 text-purple-700 border-purple-200",
+  },
+  loan: {
+    icon: Landmark,
+    bg: "bg-red-50",
+    color: "text-red-600",
+    badge: "bg-red-100 text-red-700 border-red-200",
+  },
+  gift: {
+    icon: Gift,
+    bg: "bg-fuchsia-50",
+    color: "text-fuchsia-600",
+    badge: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
   },
   other: {
     icon: MoreHorizontal,
@@ -189,16 +225,20 @@ export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 
 // Category Colors for Charts
 export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  food: "#4f46e5",        // indigo
-  transport: "#0ea5e9",   // sky
-  shopping: "#f59e0b",    // amber
-  entertainment: "#8b5cf6", // violet
-  bills: "#ef4444",       // red
-  health: "#ec4899",      // pink
-  education: "#14b8a6",   // teal
-  pets: "#fb923c",        // orange
-  investment: "#a855f7",  // purple
-  other: "#94a3b8",       // slate
+  food: "#4f46e5",
+  transport: "#0ea5e9",
+  shopping: "#f59e0b",
+  entertainment: "#8b5cf6",
+  bills: "#ef4444",
+  health: "#ec4899",
+  education: "#14b8a6",
+  pets: "#fb923c",
+  investment: "#a855f7",
+  travel: "#06b6d4",
+  subscriptions: "#7c3aed",
+  loan: "#dc2626",
+  gift: "#d946ef",
+  other: "#94a3b8",
 };
 
 // Currency Symbols

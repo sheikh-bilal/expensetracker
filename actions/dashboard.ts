@@ -141,3 +141,24 @@ export async function deleteSubscription(id: string) {
     throw new Error("Failed to delete subscription");
   }
 }
+
+export async function renewSubscription(id: string) {
+  try {
+    const userId = await getUserId();
+    if (!userId) throw new Error("Not authenticated");
+
+    await connectDB();
+    // Set billing date to today + 1 month (click date, not original billing date)
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+
+    await Subscription.findOneAndUpdate(
+      { _id: id, userId },
+      { billingDate: next },
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error renewing subscription:", error);
+    throw new Error("Failed to renew subscription");
+  }
+}

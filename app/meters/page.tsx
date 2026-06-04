@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PageLoader } from "@/components/ui/page-loader";
 import {
   Dialog,
   DialogContent,
@@ -82,12 +83,7 @@ export default function MetersPage() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-24">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Loading meters...</p>
-          </div>
-        </div>
+        <PageLoader />
       ) : (
         <div className="space-y-4">
           {METER_TYPES.map((type) => {

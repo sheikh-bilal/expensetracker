@@ -15,13 +15,7 @@ import { METER_TYPES } from "@/lib/constants/meter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SearchSelect } from "@/components/ui/search-select";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -46,6 +40,10 @@ const CATEGORY_BADGE_CLASS: Record<ExpenseCategory, string> = {
   education: "bg-cyan-100 text-cyan-700",
   pets: "bg-orange-100 text-orange-700",
   investment: "bg-violet-100 text-violet-700",
+  travel: "bg-cyan-100 text-cyan-700",
+  subscriptions: "bg-purple-100 text-purple-700",
+  loan: "bg-red-100 text-red-700",
+  gift: "bg-fuchsia-100 text-fuchsia-700",
   other: "bg-gray-100 text-gray-700",
 };
 
@@ -59,13 +57,19 @@ const CATEGORY_EMOJI: Record<ExpenseCategory, string> = {
   education: "📚",
   pets: "🐾",
   investment: "📈",
+  travel: "✈️",
+  subscriptions: "🔔",
+  loan: "🏦",
+  gift: "🎁",
   other: "📌",
 };
 
 export default function NewExpensePage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [category, setCategory] = useState<ExpenseCategory | undefined>(undefined);
+  const [category, setCategory] = useState<ExpenseCategory | undefined>(
+    undefined,
+  );
   const [billType, setBillType] = useState<string | undefined>(undefined);
   const [meterId, setMeterId] = useState<string | undefined>(undefined);
   const [meters, setMeters] = useState<Meter[]>([]);
@@ -100,7 +104,10 @@ export default function NewExpensePage() {
     return recentExpenses
       .filter((e) => {
         const d = new Date(e.date);
-        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        return (
+          d.getMonth() === now.getMonth() &&
+          d.getFullYear() === now.getFullYear()
+        );
       })
       .reduce((sum, e) => sum + e.amount, 0);
   }, [recentExpenses]);
@@ -210,32 +217,20 @@ export default function NewExpensePage() {
                           >
                             Category
                           </Label>
-                          <Select
+                          <SearchSelect
                             name="category"
                             value={category ?? ""}
                             required
-                            onValueChange={(v) => setCategory(v as ExpenseCategory)}
-                          >
-                            <SelectTrigger
-                              id="category"
-                              className="h-11 w-full rounded-lg border-gray-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20 data-[size=default]:h-11"
-                            >
-                              <SelectValue placeholder="Select category">
-                                {(value) => value ? (CATEGORY_LABELS[value as ExpenseCategory] || String(value)) : null}
-                              </SelectValue>
-                            </SelectTrigger>
-                            <SelectContent className="rounded-xl border-gray-200 w-full min-w-full">
-                              {EXPENSE_CATEGORIES.map((cat) => (
-                                <SelectItem
-                                  key={cat}
-                                  value={cat}
-                                  className="capitalize"
-                                >
-                                  {CATEGORY_LABELS[cat] || cat}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            onValueChange={(v) =>
+                              setCategory((v ?? undefined) as ExpenseCategory | undefined)
+                            }
+                            placeholder="Select category"
+                            searchPlaceholder="Search categories..."
+                            options={EXPENSE_CATEGORIES.map((cat) => ({
+                              value: cat,
+                              label: CATEGORY_LABELS[cat],
+                            }))}
+                          />
                         </div>
 
                         <div className="space-y-2">
@@ -267,7 +262,7 @@ export default function NewExpensePage() {
                             >
                               <Building2 className="h-3.5 w-3.5" /> Bill Type
                             </Label>
-                            <Select
+                            <SearchSelect
                               name="billType"
                               value={billType ?? ""}
                               required
@@ -275,122 +270,96 @@ export default function NewExpensePage() {
                                 setBillType(v ?? undefined);
                                 setMeterId(undefined);
                               }}
-                            >
-                              <SelectTrigger
-                                id="billType"
-                                className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20 data-[size=default]:h-11"
-                              >
-                                <SelectValue placeholder="Select bill type">
-                                  {(value) => value ? (BILL_TYPE_LABELS[value as keyof typeof BILL_TYPE_LABELS] || String(value)) : null}
-                                </SelectValue>
-                              </SelectTrigger>
-                              <SelectContent className="rounded-xl border-indigo-100">
-                                {BILL_TYPES.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    {BILL_TYPE_LABELS[type]}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                              placeholder="Select bill type"
+                              searchPlaceholder="Search bill types..."
+                              options={BILL_TYPES.map((type) => ({
+                                value: type,
+                                label: BILL_TYPE_LABELS[type],
+                              }))}
+                            />
                           </div>
 
-                          {billType && METER_TYPES.includes(billType as any) && (
-                            <div className="space-y-2">
-                              <Label
-                                htmlFor="meterId"
-                                className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                              >
-                                <Receipt className="h-3.5 w-3.5" /> Select Meter
-                              </Label>
-                              <Select
-                                name="meterId"
-                                value={meterId ?? ""}
-                                required
-                                onValueChange={(v) => setMeterId(v ?? undefined)}
-                              >
-                                <SelectTrigger
-                                  id="meterId"
-                                  className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20 data-[size=default]:h-11"
+                          {billType &&
+                            METER_TYPES.includes(billType as any) && (
+                              <div className="space-y-2">
+                                <Label
+                                  htmlFor="meterId"
+                                  className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
                                 >
-                                  <SelectValue placeholder="Select meter">
-                                    {(value) => { const m = meters.find((m) => m._id === value); return m ? `${m.name} (Ref: ${m.refNo})` : null; }}
-                                  </SelectValue>
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-indigo-100">
-                                  {meters.length === 0 ? (
-                                    <div className="p-2 text-xs text-gray-500">
-                                      No meters found. Add one first.
-                                    </div>
-                                  ) : (
-                                    meters.map((meter) => (
-                                      <SelectItem key={meter._id} value={meter._id}>
-                                        {meter.name} (Ref: {meter.refNo})
-                                      </SelectItem>
-                                    ))
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          )}
+                                  <Receipt className="h-3.5 w-3.5" /> Select
+                                  Meter
+                                </Label>
+                                <SearchSelect
+                                  name="meterId"
+                                  value={meterId ?? ""}
+                                  required
+                                  onValueChange={(v) =>
+                                    setMeterId(v ?? undefined)
+                                  }
+                                  placeholder="Select meter"
+                                  searchPlaceholder="Search meters..."
+                                  options={meters.map((meter) => ({
+                                    value: meter._id,
+                                    label: `${meter.name} (Ref: ${meter.refNo})`,
+                                  }))}
+                                />
+                              </div>
+                            )}
 
-                          {billType && METER_TYPES.includes(billType as any) && (
-                            <>
-                              <div className="space-y-2">
-                                <Label
-                                  htmlFor="month"
-                                  className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                >
-                                  <Clock className="h-3.5 w-3.5" /> Month
-                                </Label>
-                                <Select name="month" required>
-                                  <SelectTrigger
-                                    id="month"
-                                    className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20 data-[size=default]:h-11"
+                          {billType &&
+                            METER_TYPES.includes(billType as any) && (
+                              <>
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor="month"
+                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
                                   >
-                                    <SelectValue placeholder="Select month" />
-                                  </SelectTrigger>
-                                  <SelectContent className="rounded-xl border-indigo-100">
-                                    {MONTHS.map((month) => (
-                                      <SelectItem key={month} value={month}>
-                                        {month}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              <div className="space-y-2">
-                                <Label
-                                  htmlFor="units"
-                                  className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                >
-                                  <Zap className="h-3.5 w-3.5" /> Units
-                                </Label>
-                                <Input
-                                  id="units"
-                                  name="units"
-                                  type="number"
-                                  placeholder="150"
-                                  className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                                />
-                              </div>
-                              <div className="space-y-2 sm:col-span-2">
-                                <Label
-                                  htmlFor="reading"
-                                  className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                >
-                                  <Receipt className="h-3.5 w-3.5" /> Reading
-                                </Label>
-                                <Input
-                                  id="reading"
-                                  name="reading"
-                                  type="number"
-                                  step="any"
-                                  placeholder="150.5"
-                                  className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                                />
-                              </div>
-                            </>
-                          )}
+                                    <Clock className="h-3.5 w-3.5" /> Month
+                                  </Label>
+                                  <SearchSelect
+                                    name="month"
+                                    required
+                                    placeholder="Select month"
+                                    searchPlaceholder="Search months..."
+                                    options={MONTHS.map((month) => ({
+                                      value: month,
+                                      label: month,
+                                    }))}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label
+                                    htmlFor="units"
+                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
+                                  >
+                                    <Zap className="h-3.5 w-3.5" /> Units
+                                  </Label>
+                                  <Input
+                                    id="units"
+                                    name="units"
+                                    type="number"
+                                    placeholder="150"
+                                    className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
+                                  />
+                                </div>
+                                <div className="space-y-2 sm:col-span-2">
+                                  <Label
+                                    htmlFor="reading"
+                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
+                                  >
+                                    <Receipt className="h-3.5 w-3.5" /> Reading
+                                  </Label>
+                                  <Input
+                                    id="reading"
+                                    name="reading"
+                                    type="number"
+                                    step="any"
+                                    placeholder="150.5"
+                                    className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
+                                  />
+                                </div>
+                              </>
+                            )}
                         </div>
                       )}
                     </div>

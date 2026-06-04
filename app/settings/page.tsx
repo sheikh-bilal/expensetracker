@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -135,16 +136,7 @@ export default function SettingsPage() {
   const remainingForExpenses = budgetNum - savingsAmount;
   const currencySymbol = CURRENCY_MAP[currency]?.symbol || "₨";
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-600 border-t-transparent" />
-          <p className="text-sm text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="space-y-6 animate-fade-in p-2">

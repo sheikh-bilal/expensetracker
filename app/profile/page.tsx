@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PageLoader } from "@/components/ui/page-loader";
 import { getAuthUser } from "@/actions/auth";
 import {
   getProfileStats,
@@ -123,13 +124,7 @@ export default function ProfilePage() {
     setPasswordSaving(false);
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   const gradient = getAvatarGradient(user?.name || "U");
   const initials = getInitials(user?.name || "User");

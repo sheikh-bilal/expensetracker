@@ -40,12 +40,19 @@ export function SearchSelect({
     ? options.filter((o) => o.label.toLowerCase().startsWith(query.toLowerCase()))
     : options;
 
-  const selected = options.find((o) => o.value === value);
+  const [internalValue, setInternalValue] = React.useState(value ?? "");
+  const isControlled = value !== undefined;
+  const currentValue = isControlled ? value : internalValue;
+
+  const selected = options.find((o) => o.value === currentValue);
 
   return (
     <SelectPrimitive.Root
-      value={value ?? ""}
-      onValueChange={onValueChange}
+      value={currentValue}
+      onValueChange={(v) => {
+        if (!isControlled) setInternalValue(v ?? "");
+        onValueChange?.(v);
+      }}
       name={name}
       required={required}
       disabled={disabled}

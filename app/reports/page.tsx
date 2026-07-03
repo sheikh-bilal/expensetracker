@@ -60,7 +60,20 @@ type Expense = {
   billDetails?: { billType?: string };
 };
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
 function ChartTooltipBox({ active, payload, label, symbol }: any) {
   if (!active || !payload?.length) return null;
@@ -94,7 +107,8 @@ const BILL_COLOR_MAP: Record<string, string> = {
 
 export default function ReportsPage() {
   const { currency } = useCurrency();
-  const symbol = CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] || "₨";
+  const symbol =
+    CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] || "₨";
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +129,8 @@ export default function ReportsPage() {
   }, [expenses]);
 
   const yearExpenses = useMemo(
-    () => expenses.filter((e) => new Date(e.date).getFullYear() === selectedYear),
+    () =>
+      expenses.filter((e) => new Date(e.date).getFullYear() === selectedYear),
     [expenses, selectedYear],
   );
 
@@ -155,10 +170,14 @@ export default function ReportsPage() {
     const billExpenses = yearExpenses.filter(
       (e) => e.category === "bills" && e.billDetails?.billType,
     );
-    const byType: Record<string, { month: string; amount: number; idx: number }[]> = {};
+    const byType: Record<
+      string,
+      { month: string; amount: number; idx: number }[]
+    > = {};
     billExpenses.forEach((e) => {
       const bt = e.billDetails!.billType!;
-      if (!byType[bt]) byType[bt] = MONTHS.map((m, i) => ({ month: m, amount: 0, idx: i }));
+      if (!byType[bt])
+        byType[bt] = MONTHS.map((m, i) => ({ month: m, amount: 0, idx: i }));
       const monthIdx = new Date(e.date).getMonth();
       byType[bt][monthIdx].amount += e.amount;
     });
@@ -167,11 +186,13 @@ export default function ReportsPage() {
       .map(([billType, months]) => {
         const activeMonths = months.filter((m) => m.amount > 0);
         const total = activeMonths.reduce((s, m) => s + m.amount, 0);
-        const avg = activeMonths.length > 0 ? Math.round(total / activeMonths.length) : 0;
+        const avg =
+          activeMonths.length > 0 ? Math.round(total / activeMonths.length) : 0;
         const sorted = activeMonths.sort((a, b) => a.idx - b.idx);
         const last = sorted[sorted.length - 1]?.amount ?? 0;
         const prev = sorted[sorted.length - 2]?.amount ?? 0;
-        const trendPct = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
+        const trendPct =
+          prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
         return { billType, months, total, avg, trendPct };
       })
       .sort((a, b) => b.total - a.total);
@@ -179,7 +200,8 @@ export default function ReportsPage() {
 
   const totalSpent = yearExpenses.reduce((s, e) => s + e.amount, 0);
   const activeMonths = monthlyData.filter((m) => m.amount > 0).length;
-  const avgMonthly = activeMonths > 0 ? Math.round(totalSpent / activeMonths) : 0;
+  const avgMonthly =
+    activeMonths > 0 ? Math.round(totalSpent / activeMonths) : 0;
   const highestMonth = monthlyData.reduce(
     (max, m) => (m.amount > max.amount ? m : max),
     { month: "—", amount: 0 },
@@ -198,7 +220,10 @@ export default function ReportsPage() {
       label: "Monthly average",
       icon: Calendar,
       value: <CurrencyDisplay amount={avgMonthly} />,
-      sub: activeMonths > 0 ? `across ${activeMonths} active months` : "no data yet",
+      sub:
+        activeMonths > 0
+          ? `across ${activeMonths} active months`
+          : "no data yet",
     },
     {
       label: "Peak month",
@@ -225,7 +250,9 @@ export default function ReportsPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             Insights
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">Reports</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+            Reports
+          </h1>
         </div>
 
         {/* Year selector */}
@@ -260,7 +287,9 @@ export default function ReportsPage() {
                   <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                     {label}
                   </p>
-                  <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">{value}</p>
+                  <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+                    {value}
+                  </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>
                 </div>
               </div>
@@ -270,8 +299,10 @@ export default function ReportsPage() {
 
         {/* Monthly trend */}
         <Card className="gap-0 p-0">
-          <CardHeader className="border-b !pb-4 pt-5">
-            <CardTitle className="text-sm font-semibold">Monthly Spending</CardTitle>
+          <CardHeader className="border-b !pb-4">
+            <CardTitle className="text-sm font-semibold">
+              Monthly Spending
+            </CardTitle>
             <CardDescription className="text-xs">
               Full-year breakdown · {selectedYear}
             </CardDescription>
@@ -279,7 +310,11 @@ export default function ReportsPage() {
           <CardContent className="py-5">
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={monthlyData} barSize={24} barCategoryGap="30%">
-                <CartesianGrid vertical={false} stroke="hsl(var(--border) / 0.6)" strokeWidth={1} />
+                <CartesianGrid
+                  vertical={false}
+                  stroke="hsl(var(--border) / 0.6)"
+                  strokeWidth={1}
+                />
                 <XAxis
                   dataKey="month"
                   axisLine={false}
@@ -291,14 +326,20 @@ export default function ReportsPage() {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }}
-                  tickFormatter={(v) => `${symbol}${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
+                  tickFormatter={(v) =>
+                    `${symbol}${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`
+                  }
                   width={52}
                 />
                 <Tooltip
                   content={<ChartTooltipBox symbol={symbol} />}
                   cursor={{ fill: "hsl(var(--muted) / 0.6)", radius: 6 }}
                 />
-                <Bar dataKey="amount" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
+                <Bar
+                  dataKey="amount"
+                  fill="hsl(var(--primary))"
+                  radius={[4, 4, 0, 0]}
+                >
                   {/* Direct label on the peak month only */}
                   <LabelList
                     dataKey="amount"
@@ -313,7 +354,9 @@ export default function ReportsPage() {
                           fill="hsl(var(--foreground))"
                         >
                           {symbol}
-                          {value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toLocaleString()}
+                          {value >= 1000
+                            ? `${(value / 1000).toFixed(1)}k`
+                            : value.toLocaleString()}
                         </text>
                       ) : null
                     }
@@ -339,7 +382,9 @@ export default function ReportsPage() {
           <div className="space-y-4">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h2 className="text-sm font-semibold text-foreground">Bills Overview</h2>
+                <h2 className="text-sm font-semibold text-foreground">
+                  Bills Overview
+                </h2>
                 <p className="text-xs text-muted-foreground">
                   Monthly trend per utility · {selectedYear}
                 </p>
@@ -362,7 +407,8 @@ export default function ReportsPage() {
               {billsData.map(({ billType, months, total, avg, trendPct }) => {
                 const Icon = BILL_ICON_MAP[billType] ?? FileText;
                 const line = BILL_COLOR_MAP[billType] ?? BILL_COLOR_MAP.other;
-                const label = BILL_TYPE_LABELS[billType as BillType] ?? billType;
+                const label =
+                  BILL_TYPE_LABELS[billType as BillType] ?? billType;
                 const isUp = trendPct > 0;
                 const isFlat = trendPct === 0;
                 const maxAmt = Math.max(...months.map((m) => m.amount), 1);
@@ -370,11 +416,13 @@ export default function ReportsPage() {
                   selectedYear === new Date().getFullYear()
                     ? months.slice(0, new Date().getMonth() + 1)
                     : months;
-                const activeCount = visibleMonths.filter((m) => m.amount > 0).length;
+                const activeCount = visibleMonths.filter(
+                  (m) => m.amount > 0,
+                ).length;
 
                 return (
                   <Card key={billType} className="gap-0 overflow-hidden p-0">
-                    <div className="px-5 pb-4 pt-5">
+                    <div className="px-5 pb-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3">
                           <div
@@ -383,12 +431,19 @@ export default function ReportsPage() {
                               backgroundColor: `color-mix(in srgb, ${line} 12%, transparent)`,
                             }}
                           >
-                            <Icon className="h-4 w-4" style={{ color: line }} strokeWidth={2} />
+                            <Icon
+                              className="h-4 w-4"
+                              style={{ color: line }}
+                              strokeWidth={2}
+                            />
                           </div>
                           <div>
-                            <p className="text-[13px] font-semibold text-foreground">{label}</p>
+                            <p className="text-[13px] font-semibold text-foreground">
+                              {label}
+                            </p>
                             <p className="text-xs text-muted-foreground">
-                              {activeCount} active month{activeCount !== 1 ? "s" : ""}
+                              {activeCount} active month
+                              {activeCount !== 1 ? "s" : ""}
                             </p>
                           </div>
                         </div>
@@ -396,13 +451,21 @@ export default function ReportsPage() {
                           <span
                             className={cn(
                               "flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums",
-                              isUp ? "bg-danger/10 text-danger" : "bg-success/10 text-success",
+                              isUp
+                                ? "bg-danger/10 text-danger"
+                                : "bg-success/10 text-success",
                             )}
                           >
                             {isUp ? (
-                              <TrendingUp className="h-3 w-3" strokeWidth={2.5} />
+                              <TrendingUp
+                                className="h-3 w-3"
+                                strokeWidth={2.5}
+                              />
                             ) : (
-                              <TrendingDown className="h-3 w-3" strokeWidth={2.5} />
+                              <TrendingDown
+                                className="h-3 w-3"
+                                strokeWidth={2.5}
+                              />
                             )}
                             {Math.abs(trendPct)}%
                           </span>
@@ -428,9 +491,23 @@ export default function ReportsPage() {
                           margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
                         >
                           <defs>
-                            <linearGradient id={`grad-${billType}`} x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor={line} stopOpacity={0.16} />
-                              <stop offset="100%" stopColor={line} stopOpacity={0.02} />
+                            <linearGradient
+                              id={`grad-${billType}`}
+                              x1="0"
+                              y1="0"
+                              x2="0"
+                              y2="1"
+                            >
+                              <stop
+                                offset="0%"
+                                stopColor={line}
+                                stopOpacity={0.16}
+                              />
+                              <stop
+                                offset="100%"
+                                stopColor={line}
+                                stopOpacity={0.02}
+                              />
                             </linearGradient>
                           </defs>
                           <CartesianGrid
@@ -442,14 +519,21 @@ export default function ReportsPage() {
                             dataKey="month"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 9 }}
+                            tick={{
+                              fill: "hsl(var(--muted-foreground))",
+                              fontSize: 9,
+                            }}
                             dy={6}
                             interval={visibleMonths.length > 6 ? 1 : 0}
                           />
                           <YAxis hide domain={[0, maxAmt * 1.2]} />
                           <Tooltip
                             content={<ChartTooltipBox symbol={symbol} />}
-                            cursor={{ stroke: line, strokeWidth: 1, strokeDasharray: "4 2" }}
+                            cursor={{
+                              stroke: line,
+                              strokeWidth: 1,
+                              strokeDasharray: "4 2",
+                            }}
                           />
                           <Area
                             type="monotone"
@@ -495,27 +579,33 @@ export default function ReportsPage() {
           <>
             {/* Donut + legend — same component the dashboard uses */}
             <Card className="gap-0 p-0">
-              <CardHeader className="border-b !pb-4 pt-5">
-                <CardTitle className="text-sm font-semibold">Spending by Category</CardTitle>
+              <CardHeader className="border-b !pb-4">
+                <CardTitle className="text-sm font-semibold">
+                  Spending by Category
+                </CardTitle>
                 <CardDescription className="text-xs">
                   {selectedYear} distribution · {categoryData.length} categories
                 </CardDescription>
               </CardHeader>
               <CardContent className="py-6">
                 <CategoryDonutChart
-                  data={categoryData.map(({ category, amount, percentage }) => ({
-                    category,
-                    amount,
-                    percentage,
-                  }))}
+                  data={categoryData.map(
+                    ({ category, amount, percentage }) => ({
+                      category,
+                      amount,
+                      percentage,
+                    }),
+                  )}
                 />
               </CardContent>
             </Card>
 
             {/* Ranked list */}
             <Card className="gap-0 p-0">
-              <CardHeader className="border-b !pb-4 pt-5">
-                <CardTitle className="text-sm font-semibold">Category Breakdown</CardTitle>
+              <CardHeader className="border-b !pb-4">
+                <CardTitle className="text-sm font-semibold">
+                  Category Breakdown
+                </CardTitle>
                 <CardDescription className="text-xs">
                   Ranked by total spend · {selectedYear}
                 </CardDescription>
@@ -526,53 +616,64 @@ export default function ReportsPage() {
                 </CardAction>
               </CardHeader>
               <CardContent className="p-3">
-                {categoryData.map(({ category, name, amount, percentage, fill }, idx) => {
-                  const cfg = CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG.other;
-                  const Icon = cfg.icon;
-                  const txCount = yearExpenses.filter((e) => e.category === category).length;
+                {categoryData.map(
+                  ({ category, name, amount, percentage, fill }, idx) => {
+                    const cfg =
+                      CATEGORY_CONFIG[category] ?? CATEGORY_CONFIG.other;
+                    const Icon = cfg.icon;
+                    const txCount = yearExpenses.filter(
+                      (e) => e.category === category,
+                    ).length;
 
-                  return (
-                    <div
-                      key={category}
-                      className="group flex items-center gap-3.5 rounded-xl px-3 py-3 transition-colors duration-150 hover:bg-muted/50"
-                    >
-                      <span className="w-5 shrink-0 text-center text-xs font-semibold tabular-nums text-muted-foreground/70">
-                        {idx + 1}
-                      </span>
+                    return (
                       <div
-                        className={cn(
-                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                          cfg.bg,
-                        )}
+                        key={category}
+                        className="group flex items-center gap-3.5 rounded-xl px-3 py-3 transition-colors duration-150 hover:bg-muted/50"
                       >
-                        <Icon className={cn("h-4 w-4", cfg.color)} strokeWidth={2} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1.5 flex items-center justify-between gap-2">
-                          <span className="truncate text-[13px] font-medium text-foreground">
-                            {name}
-                            <span className="ml-2 text-xs font-normal text-muted-foreground">
-                              {txCount} tx
-                            </span>
-                          </span>
-                          <span className="shrink-0 text-[13px] font-semibold tabular-nums text-foreground">
-                            {symbol}
-                            {amount.toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
-                          <div
-                            className="h-full rounded-full transition-[width] duration-700 ease-out"
-                            style={{ width: `${percentage}%`, backgroundColor: fill }}
+                        <span className="w-5 shrink-0 text-center text-xs font-semibold tabular-nums text-muted-foreground/70">
+                          {idx + 1}
+                        </span>
+                        <div
+                          className={cn(
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                            cfg.bg,
+                          )}
+                        >
+                          <Icon
+                            className={cn("h-4 w-4", cfg.color)}
+                            strokeWidth={2}
                           />
                         </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1.5 flex items-center justify-between gap-2">
+                            <span className="truncate text-[13px] font-medium text-foreground">
+                              {name}
+                              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                                {txCount} tx
+                              </span>
+                            </span>
+                            <span className="shrink-0 text-[13px] font-semibold tabular-nums text-foreground">
+                              {symbol}
+                              {amount.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full transition-[width] duration-700 ease-out"
+                              style={{
+                                width: `${percentage}%`,
+                                backgroundColor: fill,
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <span className="hidden w-9 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground sm:block">
+                          {percentage}%
+                        </span>
                       </div>
-                      <span className="hidden w-9 shrink-0 text-right text-xs font-medium tabular-nums text-muted-foreground sm:block">
-                        {percentage}%
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </CardContent>
             </Card>
           </>
@@ -580,7 +681,10 @@ export default function ReportsPage() {
           <Card className="p-0">
             <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                <PieChartIcon className="h-7 w-7 text-muted-foreground/50" strokeWidth={1.5} />
+                <PieChartIcon
+                  className="h-7 w-7 text-muted-foreground/50"
+                  strokeWidth={1.5}
+                />
               </div>
               <p className="text-base font-semibold text-foreground">
                 No data for {selectedYear}

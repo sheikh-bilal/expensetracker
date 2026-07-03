@@ -90,7 +90,7 @@ export default async function DashboardPage() {
             {format(now, "EEEE, MMMM d")}
           </p>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-            {greeting}, {userName}
+            {greeting}, {userName} 👋
           </h1>
         </div>
         <Button

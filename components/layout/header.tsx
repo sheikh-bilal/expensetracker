@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LogOut, User, Settings, ChevronDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
@@ -14,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AppBreadcrumb } from "./breadcrumb";
-import { CommandMenu } from "./command-menu";
 import { NotificationsPopover } from "./notifications-popover";
 
 interface User {
@@ -51,80 +49,106 @@ export function Header() {
     router.refresh();
   }
 
-  const initials = user?.name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2) || "U";
+  const initials =
+    user?.name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2) || "U";
+  const firstName = user?.name?.split(" ")[0];
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
-      <SidebarTrigger className="-ml-1" />
+    <header className="sticky top-0 z-10 flex h-15.5 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
+      <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
+      <div className="mx-1 hidden h-4 w-px bg-border md:block" aria-hidden />
 
       <div className="hidden flex-1 md:block">
         <AppBreadcrumb />
       </div>
 
-      <div className="ml-auto flex items-center gap-2">
-        <CommandMenu />
+      <div className="ml-auto flex items-center gap-1.5">
         <NotificationsPopover />
 
+        <div className="mx-1 h-4 w-px bg-border" aria-hidden />
+
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all">
-            <Avatar className="h-8 w-8 hover:opacity-90 ring-1 ring-border shadow-sm transition-all">
-              <AvatarImage src="/avatar.jpg" alt="User" />
-              <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-semibold">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50">
+            <Avatar className="h-7 w-7 ring-1 ring-foreground/10">
+              <AvatarImage src="/avatar.jpg" alt="" />
+              <AvatarFallback className="hero-panel text-[10px] font-semibold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
+            <span className="hidden max-w-[8rem] truncate text-[13px] font-medium text-foreground sm:block">
+              {isLoading ? "…" : (firstName ?? "Account")}
+            </span>
+            <ChevronDown
+              className="hidden h-3.5 w-3.5 text-muted-foreground sm:block"
+              strokeWidth={2}
+            />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl shadow-lg border border-border/80">
-            <div className="flex items-center gap-2.5 p-2.5">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">{initials}</AvatarFallback>
+
+          <DropdownMenuContent
+            align="end"
+            className="mt-2 w-60 rounded-xl p-0 shadow-lg ring-1 ring-foreground/5"
+          >
+            {/* Identity */}
+            <div className="flex items-center gap-3 border-b bg-muted/40 p-3">
+              <Avatar className="h-9 w-9 ring-1 ring-foreground/10">
+                <AvatarFallback className="hero-panel text-xs font-semibold text-white">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
-              <div className="flex flex-col space-y-0.5">
+              <div className="min-w-0">
                 {isLoading ? (
-                  <>
-                    <p className="text-sm font-semibold leading-none text-foreground">Loading...</p>
-                    <p className="text-xs leading-none text-muted-foreground">Please wait</p>
-                  </>
+                  <p className="text-sm font-semibold text-foreground">
+                    Loading…
+                  </p>
                 ) : user ? (
                   <>
-                    <p className="text-sm font-semibold leading-none text-foreground">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="truncate text-sm font-semibold leading-tight text-foreground">
+                      {user.name}
+                    </p>
+                    <p className="mt-0.5 truncate text-xs leading-tight text-muted-foreground">
+                      {user.email}
+                    </p>
                   </>
                 ) : (
                   <>
-                    <p className="text-sm font-semibold leading-none text-foreground">Guest</p>
-                    <p className="text-xs leading-none text-muted-foreground">Not logged in</p>
+                    <p className="text-sm font-semibold leading-tight text-foreground">
+                      Guest
+                    </p>
+                    <p className="mt-0.5 text-xs leading-tight text-muted-foreground">
+                      Not logged in
+                    </p>
                   </>
                 )}
               </div>
             </div>
-            <DropdownMenuSeparator className="mx-1" />
+
             <div className="p-1">
               <DropdownMenuItem
                 onClick={() => router.push("/profile")}
-                className="rounded-md py-2 px-2.5 cursor-pointer text-sm font-medium gap-2"
+                className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium"
               >
-                <User className="h-4 w-4" />
+                <User className="h-4 w-4 text-muted-foreground" />
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/settings")}
-                className="rounded-md py-2 px-2.5 cursor-pointer text-sm font-medium gap-2"
+                className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 text-muted-foreground" />
                 Settings
               </DropdownMenuItem>
             </div>
-            <DropdownMenuSeparator className="mx-1" />
+
+            <DropdownMenuSeparator className="my-0" />
             <div className="p-1">
               <DropdownMenuItem
                 onClick={handleLogout}
-                className="rounded-md py-2 px-2.5 cursor-pointer text-sm font-medium text-destructive focus:bg-destructive/10 focus:text-destructive gap-2"
+                className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-destructive"
               >
                 <LogOut className="h-4 w-4" />
                 Log out

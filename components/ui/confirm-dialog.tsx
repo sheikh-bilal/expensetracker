@@ -4,14 +4,16 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AlertTriangle } from "lucide-react";
 
 interface ConfirmDialogProps {
@@ -45,47 +47,34 @@ export function ConfirmDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px] rounded-2xl border-0 shadow-xl">
-        <DialogHeader className="pb-3">
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
           {variant === "danger" && (
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-rose-100">
-              <AlertTriangle className="h-6 w-6 text-rose-600" strokeWidth={2.5} />
-            </div>
+            <AlertDialogMedia className="bg-danger/10">
+              <AlertTriangle className="text-danger" strokeWidth={2.25} />
+            </AlertDialogMedia>
           )}
-          <DialogTitle className="text-center text-base font-semibold">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm text-muted-foreground pt-1">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="gap-3 sm:gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="flex-1 h-10 rounded-xl"
-            disabled={isSubmitting}
-          >
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isSubmitting}>
             {cancelText}
-          </Button>
-          <Button
-            type="button"
+          </AlertDialogCancel>
+          <AlertDialogAction
             onClick={handleConfirm}
-            className={cn(
-              "flex-1 h-10 rounded-xl font-semibold",
-              variant === "danger"
-                ? "bg-rose-600 hover:bg-rose-700 text-white"
-                : "bg-indigo-600 hover:bg-indigo-700 text-white"
-            )}
             disabled={isSubmitting}
+            className={cn(
+              variant === "danger" &&
+                "bg-danger text-danger-foreground hover:bg-danger/90",
+            )}
           >
             {isSubmitting ? "Processing..." : confirmText}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -113,12 +102,12 @@ export function useConfirmDialog() {
 
   const handleConfirm = () => {
     dialog.resolver?.(true);
-    setDialog((prev: any) => ({ ...prev, open: false, resolver: null }));
+    setDialog((prev) => ({ ...prev, open: false, resolver: null }));
   };
 
   const handleCancel = () => {
     dialog.resolver?.(false);
-    setDialog((prev: any) => ({ ...prev, open: false, resolver: null }));
+    setDialog((prev) => ({ ...prev, open: false, resolver: null }));
   };
 
   return { dialog, confirm, handleConfirm, handleCancel };

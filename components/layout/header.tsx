@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +13,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Breadcrumb } from "./breadcrumb";
+import { AppBreadcrumb } from "./breadcrumb";
+import { CommandMenu } from "./command-menu";
+import { NotificationsPopover } from "./notifications-popover";
 
 interface User {
   _id: string;
@@ -56,27 +59,19 @@ export function Header() {
     .slice(0, 2) || "U";
 
   return (
-    <header className="sticky top-0 z-10 flex h-14 items-center gap-4 bg-white/80 px-6 backdrop-blur-md shadow-[0_1px_2px_0_rgba(0,0,0,0.02)] border-b border-border transition-all">
-      {/* Breadcrumb */}
-      <div className="flex-1">
-        <Breadcrumb />
+    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
+      <SidebarTrigger className="-ml-1" />
+
+      <div className="hidden flex-1 md:block">
+        <AppBreadcrumb />
       </div>
 
-      {/* Right side controls */}
-      <div className="ml-auto flex items-center gap-3">
-        {/* Notifications */}
-        <Button
-          size="icon"
-          variant="ghost"
-          className="relative h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80 focus-visible:ring-indigo-500"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-[9px] top-[9px] h-2 w-2 rounded-full border-2 border-white bg-rose-500" />
-        </Button>
+      <div className="ml-auto flex items-center gap-2">
+        <CommandMenu />
+        <NotificationsPopover />
 
-        {/* User Menu */}
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-all">
+          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all">
             <Avatar className="h-8 w-8 hover:opacity-90 ring-1 ring-border shadow-sm transition-all">
               <AvatarImage src="/avatar.jpg" alt="User" />
               <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-violet-600 text-white text-xs font-semibold">
@@ -87,7 +82,7 @@ export function Header() {
           <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl shadow-lg border border-border/80">
             <div className="flex items-center gap-2.5 p-2.5">
               <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-indigo-600 text-white font-semibold">{initials}</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">{initials}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col space-y-0.5">
                 {isLoading ? (

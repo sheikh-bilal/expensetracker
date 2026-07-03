@@ -1,4 +1,4 @@
-export type PaymentMethod = "upi" | "card" | "bank" | "cash";
+export type PaymentMethod = "card" | "bank" | "cash";
 
 export type Category =
   | "food"

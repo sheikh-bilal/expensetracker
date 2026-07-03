@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { PageLoader } from "@/components/ui/page-loader";
-import { StatCard } from "@/components/dashboard/stat-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -28,9 +27,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Receipt,
-  TrendingDown,
   CalendarDays,
   Wallet,
+  ArrowUpRight,
+  ArrowDownRight,
+  Hash,
 } from "lucide-react";
 import { getExpenses, deleteExpense } from "@/actions/expenses";
 import { formatDate } from "@/lib/utils";
@@ -44,7 +45,10 @@ import {
   CATEGORY_CONFIG,
   type ExpenseCategory,
 } from "@/lib/constants/expense";
-import { ConfirmDialog, useConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  ConfirmDialog,
+  useConfirmDialog,
+} from "@/components/ui/confirm-dialog";
 import Link from "next/link";
 
 type ExpenseRecord = {
@@ -61,20 +65,19 @@ const ITEMS_PER_PAGE = 20;
 
 const CATEGORIES = [
   { value: "all", label: "All Categories" },
-  ...EXPENSE_CATEGORIES.map((cat) => ({ value: cat, label: CATEGORY_LABELS[cat] })),
+  ...EXPENSE_CATEGORIES.map((cat) => ({
+    value: cat,
+    label: CATEGORY_LABELS[cat],
+  })),
 ];
 
 const PAYMENT_METHODS_LIST = [
   { value: "all", label: "All Methods" },
-  ...PAYMENT_METHODS.map((method) => ({ value: method, label: PAYMENT_METHOD_LABELS[method] })),
+  ...PAYMENT_METHODS.map((method) => ({
+    value: method,
+    label: PAYMENT_METHOD_LABELS[method],
+  })),
 ];
-
-const PAYMENT_METHOD_STYLE: Record<string, string> = {
-  upi: "bg-violet-50 text-violet-600",
-  card: "bg-sky-50 text-sky-600",
-  bank: "bg-blue-50 text-blue-600",
-  cash: "bg-emerald-50 text-emerald-600",
-};
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
@@ -83,9 +86,16 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedMethod, setSelectedMethod] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const { dialog: deleteDialog, confirm: confirmDelete, handleConfirm: handleDeleteConfirm, handleCancel: handleDeleteCancel } = useConfirmDialog();
+  const {
+    dialog: deleteDialog,
+    confirm: confirmDelete,
+    handleConfirm: handleDeleteConfirm,
+    handleCancel: handleDeleteCancel,
+  } = useConfirmDialog();
 
-  useEffect(() => { loadExpenses(); }, []);
+  useEffect(() => {
+    loadExpenses();
+  }, []);
 
   async function loadExpenses() {
     setLoading(true);
@@ -110,9 +120,14 @@ export default function ExpensesPage() {
   const filtered = useMemo(() => {
     return expenses.filter((e) => {
       const q = searchQuery.toLowerCase();
-      const matchSearch = !q || e.description?.toLowerCase().includes(q) || e.category.toLowerCase().includes(q);
-      const matchCat = selectedCategory === "all" || e.category === selectedCategory;
-      const matchMethod = selectedMethod === "all" || e.paymentMethod === selectedMethod;
+      const matchSearch =
+        !q ||
+        e.description?.toLowerCase().includes(q) ||
+        e.category.toLowerCase().includes(q);
+      const matchCat =
+        selectedCategory === "all" || e.category === selectedCategory;
+      const matchMethod =
+        selectedMethod === "all" || e.paymentMethod === selectedMethod;
       return matchSearch && matchCat && matchMethod;
     });
   }, [expenses, searchQuery, selectedCategory, selectedMethod]);
@@ -120,112 +135,195 @@ export default function ExpensesPage() {
   const stats = useMemo(() => {
     const totalSpend = expenses.reduce((s, e) => s + e.amount, 0);
     const now = new Date();
-    const monthlySpend = expenses
-      .filter((e) => { const d = new Date(e.date); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); })
-      .reduce((s, e) => s + e.amount, 0);
+    const sumForMonth = (offset: number) => {
+      const ref = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+      return expenses
+        .filter((e) => {
+          const d = new Date(e.date);
+          return (
+            d.getMonth() === ref.getMonth() &&
+            d.getFullYear() === ref.getFullYear()
+          );
+        })
+        .reduce((s, e) => s + e.amount, 0);
+    };
+    const monthlySpend = sumForMonth(0);
+    const prevMonthSpend = sumForMonth(-1);
+    const monthTrend =
+      prevMonthSpend > 0
+        ? Math.round(((monthlySpend - prevMonthSpend) / prevMonthSpend) * 100)
+        : null;
     const avgTx = expenses.length > 0 ? totalSpend / expenses.length : 0;
-    return { totalSpend, monthlySpend, avgTx };
+    return { totalSpend, monthlySpend, monthTrend, avgTx };
   }, [expenses]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
-  useEffect(() => { setCurrentPage(1); }, [searchQuery, selectedCategory, selectedMethod]);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory, selectedMethod]);
 
-  const activeFilterCount = (searchQuery ? 1 : 0) + (selectedCategory !== "all" ? 1 : 0) + (selectedMethod !== "all" ? 1 : 0);
+  const activeFilterCount =
+    (searchQuery ? 1 : 0) +
+    (selectedCategory !== "all" ? 1 : 0) +
+    (selectedMethod !== "all" ? 1 : 0);
+
+  const statTiles = [
+    {
+      label: "Total spend",
+      icon: Wallet,
+      value: <CurrencyDisplay amount={stats.totalSpend} />,
+      sub: "across your ledger",
+    },
+    {
+      label: "This month",
+      icon: CalendarDays,
+      value: <CurrencyDisplay amount={stats.monthlySpend} />,
+      sub:
+        stats.monthTrend === null ? (
+          "no data last month"
+        ) : (
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 font-medium",
+              stats.monthTrend > 0 ? "text-danger" : "text-success",
+            )}
+          >
+            {stats.monthTrend > 0 ? (
+              <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
+            ) : (
+              <ArrowDownRight className="h-3 w-3" strokeWidth={2.5} />
+            )}
+            {Math.abs(stats.monthTrend)}% vs last month
+          </span>
+        ),
+    },
+    {
+      label: "Average transaction",
+      icon: Receipt,
+      value: <CurrencyDisplay amount={stats.avgTx} />,
+      sub: "per entry",
+    },
+    {
+      label: "Transactions",
+      icon: Hash,
+      value: <span>{expenses.length}</span>,
+      sub: "in your ledger",
+    },
+  ];
 
   return (
-    <div className="space-y-6 animate-fade-in p-2">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 animate-fade-in">
+      {/* Page header */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground mt-0.5">Transactions</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            <span className="font-semibold text-foreground">{expenses.length}</span> transactions in your ledger
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            Ledger
           </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+            Transactions
+          </h1>
         </div>
-        <Link href="/expenses/new">
-          <Button className="h-9 gap-1.5 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-sm font-semibold shadow-[0_2px_10px_rgba(79,70,229,0.25)] hover:from-indigo-700 hover:to-violet-700 transition-all">
-            <Plus className="h-4 w-4" />
-            New Expense
-          </Button>
-        </Link>
+        <Button
+          className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
+          render={<Link href="/expenses/new" />}
+        >
+          <Plus className="h-4 w-4" />
+          New Expense
+        </Button>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
-        <StatCard
-          title="Total Spend"
-          value={<CurrencyDisplay amount={stats.totalSpend} className="text-3xl font-black text-foreground" />}
-          icon={Wallet}
-          iconColor="text-indigo-600"
-          iconBg="bg-indigo-50"
-          trend={{ value: 8.2, isPositive: false }}
-        />
-        <StatCard
-          title="This Month"
-          value={<CurrencyDisplay amount={stats.monthlySpend} className="text-3xl font-black text-foreground" />}
-          icon={CalendarDays}
-          iconColor="text-orange-600"
-          iconBg="bg-orange-50"
-          trend={{ value: 5.4, isPositive: true }}
-        />
-        <StatCard
-          title="Avg. Transaction"
-          value={<CurrencyDisplay amount={stats.avgTx} className="text-3xl font-black text-foreground" />}
-          icon={TrendingDown}
-          iconColor="text-emerald-600"
-          iconBg="bg-emerald-50"
-          trend={{ value: 2.1, isPositive: null }}
-        />
-      </div>
+      {/* Stat tiles */}
+      <Card className="gap-0 p-0 animate-fade-in">
+        <CardContent className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border/60 p-0 lg:grid-cols-4">
+          {statTiles.map(({ label, icon: Icon, value, sub }) => (
+            <div key={label} className="flex flex-col gap-3 bg-card p-5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Icon className="h-4 w-4 text-primary" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  {label}
+                </p>
+                <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+                  {value}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
 
-      {/* Table Card */}
-      <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col">
-
-        {/* Filters Bar */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center p-4 border-b border-border/50 bg-muted/20">
-          <div className="relative flex-1 max-w-sm group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-indigo-600 transition-colors" />
+      {/* Table card */}
+      <Card className="flex flex-col gap-0 overflow-hidden p-0 animate-fade-in">
+        {/* Filters bar */}
+        <div className="flex flex-col gap-3 border-b bg-muted/30 p-4 sm:flex-row sm:items-center">
+          <div className="relative max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search by name or category..."
-              className="h-9 w-full pl-9 text-sm bg-muted/60 border-transparent hover:bg-muted/80 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 rounded-lg shadow-sm transition-all"
+              className="h-9 w-full rounded-lg bg-card pl-9 text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Select value={selectedCategory} onValueChange={(v) => setSelectedCategory(v || "all")}>
-              <SelectTrigger className="h-9 w-[150px] text-sm rounded-lg bg-muted/60 border-transparent hover:bg-muted/80 focus:bg-white focus:border-indigo-500 transition-all data-[state=open]:bg-white data-[state=open]:border-indigo-500">
+            <Select
+              value={selectedCategory}
+              onValueChange={(v) => setSelectedCategory(v || "all")}
+            >
+              <SelectTrigger className="h-9 w-[150px] rounded-lg bg-card text-sm">
                 <SelectValue>
-                  {(value) => CATEGORIES.find((c) => c.value === value)?.label ?? "All Categories"}
+                  {(value) =>
+                    CATEGORIES.find((c) => c.value === value)?.label ??
+                    "All Categories"
+                  }
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border shadow-lg">
+              <SelectContent>
                 {CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value} className="text-sm font-medium">{c.label}</SelectItem>
+                  <SelectItem key={c.value} value={c.value} className="text-sm">
+                    {c.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={selectedMethod} onValueChange={(v) => setSelectedMethod(v || "all")}>
-              <SelectTrigger className="h-9 w-[140px] text-sm rounded-lg bg-muted/60 border-transparent hover:bg-muted/80 focus:bg-white focus:border-indigo-500 transition-all data-[state=open]:bg-white data-[state=open]:border-indigo-500">
+            <Select
+              value={selectedMethod}
+              onValueChange={(v) => setSelectedMethod(v || "all")}
+            >
+              <SelectTrigger className="h-9 w-[140px] rounded-lg bg-card text-sm">
                 <SelectValue>
-                  {(value) => PAYMENT_METHODS_LIST.find((m) => m.value === value)?.label ?? "All Methods"}
+                  {(value) =>
+                    PAYMENT_METHODS_LIST.find((m) => m.value === value)
+                      ?.label ?? "All Methods"
+                  }
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent className="rounded-xl border-border shadow-lg">
+              <SelectContent>
                 {PAYMENT_METHODS_LIST.map((m) => (
-                  <SelectItem key={m.value} value={m.value} className="text-sm font-medium">{m.label}</SelectItem>
+                  <SelectItem key={m.value} value={m.value} className="text-sm">
+                    {m.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {activeFilterCount > 0 && (
               <button
-                className="inline-flex items-center gap-1.5 h-9 px-3 text-xs font-semibold rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                onClick={() => { setSearchQuery(""); setSelectedCategory("all"); setSelectedMethod("all"); }}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-primary/10 px-3 text-xs font-semibold text-primary transition-colors hover:bg-primary/15"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("all");
+                  setSelectedMethod("all");
+                }}
               >
                 Clear
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white text-[10px] font-bold">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
                   {activeFilterCount}
                 </span>
               </button>
@@ -237,22 +335,28 @@ export default function ExpensesPage() {
         {loading ? (
           <PageLoader />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+          <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
               <Receipt className="h-6 w-6 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">No expenses found</p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {activeFilterCount > 0 ? "Try adjusting your filters" : "Add your first expense to get started"}
+              <p className="text-sm font-semibold text-foreground">
+                No expenses found
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {activeFilterCount > 0
+                  ? "Try adjusting your filters"
+                  : "Add your first expense to get started"}
               </p>
             </div>
             {activeFilterCount === 0 && (
-              <Link href="/expenses/new">
-                <Button size="sm" className="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs font-semibold">
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Expense
-                </Button>
-              </Link>
+              <Button
+                size="sm"
+                className="h-8 rounded-lg text-xs font-semibold"
+                render={<Link href="/expenses/new" />}
+              >
+                <Plus className="mr-1 h-3.5 w-3.5" /> Add Expense
+              </Button>
             )}
           </div>
         ) : (
@@ -260,49 +364,62 @@ export default function ExpensesPage() {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-border/50 hover:bg-transparent bg-muted/40">
-                    <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider h-11 py-0 pl-6">
-                      Type
+                  <TableRow className="border-b bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="h-11 py-0 pl-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Transaction
                     </TableHead>
-                    <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider h-11 py-0">
+                    <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Category
                     </TableHead>
-                    <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider h-11 py-0">
+                    <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Date
                     </TableHead>
-                    <TableHead className="text-xs font-bold text-muted-foreground uppercase tracking-wider h-11 py-0 text-right pr-6">
+                    <TableHead className="h-11 py-0 pr-6 text-right text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Amount
                     </TableHead>
-                    <TableHead className="h-11 py-0 w-14" />
+                    <TableHead className="h-11 w-14 py-0" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginated.map((expense) => {
-                    const cfg = CATEGORY_CONFIG[expense.category as ExpenseCategory] ?? CATEGORY_CONFIG.other;
+                    const cfg =
+                      CATEGORY_CONFIG[expense.category as ExpenseCategory] ??
+                      CATEGORY_CONFIG.other;
                     const Icon = cfg.icon;
-                    const label = CATEGORY_LABELS[expense.category as ExpenseCategory] ?? expense.category;
-                    const methodLabel = PAYMENT_METHOD_LABELS[expense.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS];
-                    const methodStyle = PAYMENT_METHOD_STYLE[expense.paymentMethod] ?? "bg-slate-50 text-slate-600";
+                    const label =
+                      CATEGORY_LABELS[expense.category as ExpenseCategory] ??
+                      expense.category;
+                    const methodLabel =
+                      PAYMENT_METHOD_LABELS[
+                        expense.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS
+                      ];
                     return (
                       <TableRow
                         key={expense._id}
-                        className="border-b border-border/60 group hover:bg-muted/25 transition-colors"
+                        className="group border-b transition-colors hover:bg-muted/40"
                       >
-                        {/* Type: icon + name + subCategory */}
                         <TableCell className="py-3.5 pl-6">
                           <div className="flex items-center gap-3">
-                            <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", cfg.bg)}>
-                              <Icon className={cn("h-4 w-4", cfg.color)} strokeWidth={2.5} />
+                            <div
+                              className={cn(
+                                "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                                cfg.bg,
+                              )}
+                            >
+                              <Icon
+                                className={cn("h-4 w-4", cfg.color)}
+                                strokeWidth={2}
+                              />
                             </div>
                             <div className="min-w-0">
                               <p
-                                className="text-sm font-semibold text-foreground leading-tight capitalize truncate"
+                                className="truncate text-[13px] font-medium capitalize leading-tight text-foreground"
                                 title={expense.description || label}
                               >
                                 {expense.description || label}
                               </p>
                               {expense.subCategory && (
-                                <p className="text-xs text-muted-foreground mt-0.5 capitalize truncate">
+                                <p className="mt-0.5 truncate text-xs capitalize text-muted-foreground">
                                   {expense.subCategory}
                                 </p>
                               )}
@@ -310,40 +427,41 @@ export default function ExpensesPage() {
                           </div>
                         </TableCell>
 
-                        {/* Category badge */}
                         <TableCell className="py-3.5">
-                          <Badge
-                            variant="outline"
-                            className={cn("text-xs h-6 px-2.5 font-semibold rounded-md border", cfg.badge)}
-                          >
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground">
+                            <span className={cn("h-1.5 w-1.5 rounded-full", cfg.color.replace("text-", "bg-"))} aria-hidden />
                             {label}
-                          </Badge>
-                        </TableCell>
-
-                        {/* Date + payment method */}
-                        <TableCell className="py-3.5">
-                          <p className="text-sm font-medium text-muted-foreground">{formatDate(expense.date)}</p>
-                          {methodLabel && (
-                            <span className={cn("mt-0.5 inline-flex text-[10px] font-semibold px-1.5 rounded", methodStyle)}>
-                              {methodLabel}
-                            </span>
-                          )}
-                        </TableCell>
-
-                        {/* Amount */}
-                        <TableCell className="py-3.5 pr-6 text-right">
-                          <span className="text-[15px] font-black tracking-tight text-foreground tabular-nums">
-                            <CurrencyDisplay amount={expense.amount} />
                           </span>
                         </TableCell>
 
-                        {/* Delete */}
-                        <TableCell className="py-3.5 w-14">
+                        <TableCell className="py-3.5">
+                          <p className="text-[13px] text-muted-foreground">
+                            {formatDate(expense.date)}
+                          </p>
+                          {methodLabel && (
+                            <p className="mt-0.5 text-[11px] text-muted-foreground/70">
+                              {methodLabel}
+                            </p>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="py-3.5 pr-6 text-right">
+                          <span className="text-[13px] font-semibold tabular-nums text-foreground">
+                            −<CurrencyDisplay amount={expense.amount} />
+                          </span>
+                        </TableCell>
+
+                        <TableCell className="w-14 py-3.5">
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-50 text-muted-foreground hover:text-rose-600"
-                            onClick={() => handleDeleteExpense(expense._id, expense.description || label)}
+                            className="h-8 w-8 rounded-lg text-muted-foreground opacity-0 transition-opacity hover:bg-danger/10 hover:text-danger focus-visible:opacity-100 group-hover:opacity-100"
+                            onClick={() =>
+                              handleDeleteExpense(
+                                expense._id,
+                                expense.description || label,
+                              )
+                            }
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -356,36 +474,49 @@ export default function ExpensesPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between border-t border-border/40 bg-muted/10 px-5 py-3">
+            <div className="flex items-center justify-between border-t bg-muted/30 px-5 py-3">
               <p className="text-xs text-muted-foreground">
                 <span className="font-medium text-foreground">
-                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}
+                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
+                  {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}
                 </span>{" "}
-                of <span className="font-medium text-foreground">{filtered.length}</span>
+                of{" "}
+                <span className="font-medium text-foreground">
+                  {filtered.length}
+                </span>
               </p>
               <div className="flex items-center gap-1">
                 <Button
-                  variant="ghost" size="icon"
-                  className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => p - 1)}
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                  .filter(
+                    (p) =>
+                      p === 1 ||
+                      p === totalPages ||
+                      Math.abs(p - currentPage) <= 1,
+                  )
                   .map((p, idx, arr) => (
                     <div key={p} className="flex items-center">
                       {idx > 0 && arr[idx - 1] !== p - 1 && (
-                        <span className="px-1 text-xs text-muted-foreground">…</span>
+                        <span className="px-1 text-xs text-muted-foreground">
+                          …
+                        </span>
                       )}
                       <Button
-                        variant="ghost" size="icon"
+                        variant="ghost"
+                        size="icon"
                         className={cn(
                           "h-7 w-7 rounded-lg text-xs font-semibold",
                           p === currentPage
-                            ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                            ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
                         )}
                         onClick={() => setCurrentPage(p)}
                       >
@@ -394,8 +525,9 @@ export default function ExpensesPage() {
                     </div>
                   ))}
                 <Button
-                  variant="ghost" size="icon"
-                  className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-30"
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
                 >
@@ -405,11 +537,13 @@ export default function ExpensesPage() {
             </div>
           </>
         )}
-      </div>
+      </Card>
 
       <ConfirmDialog
         open={deleteDialog.open}
-        onOpenChange={(open) => { if (!open) handleDeleteCancel(); }}
+        onOpenChange={(open) => {
+          if (!open) handleDeleteCancel();
+        }}
         onConfirm={handleDeleteConfirm}
         {...deleteDialog.config}
       />

@@ -1,20 +1,20 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+import { cookies } from "next/headers";
+import { AppShell } from "@/components/layout/app-shell";
 
-export default function SubscriptionsLayout({
+export default async function SubscriptionsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const defaultSidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gradient-to-br from-rose-50/30 via-pink-50/20 to-red-50/30">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-hide">
-          {children}
-        </main>
-      </div>
-    </div>
+    <AppShell
+      defaultSidebarOpen={defaultSidebarOpen}
+      contentClassName="bg-gradient-to-br from-rose-50/30 via-pink-50/20 to-red-50/30"
+    >
+      {children}
+    </AppShell>
   );
 }

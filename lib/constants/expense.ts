@@ -145,12 +145,11 @@ export const CATEGORY_CONFIG: Record<
 };
 
 // Payment Methods
-export const PAYMENT_METHODS = ["upi", "card", "bank", "cash"] as const;
+export const PAYMENT_METHODS = ["card", "bank", "cash"] as const;
 
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
-  upi: "UPI",
   card: "Card",
   bank: "Bank Transfer",
   cash: "Cash",
@@ -223,22 +222,23 @@ export const CURRENCIES = [
 
 export type CurrencyCode = (typeof CURRENCIES)[number]["code"];
 
-// Category Colors for Charts
+// Category Colors for Charts — theme-aware tokens defined in globals.css.
+// Light/dark steps are CVD-validated; safe in SVG fills and inline styles.
 export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  food: "#4f46e5",
-  transport: "#0ea5e9",
-  shopping: "#f59e0b",
-  entertainment: "#8b5cf6",
-  bills: "#ef4444",
-  health: "#ec4899",
-  education: "#14b8a6",
-  pets: "#fb923c",
-  investment: "#a855f7",
-  travel: "#06b6d4",
-  subscriptions: "#7c3aed",
-  loan: "#dc2626",
-  gift: "#d946ef",
-  other: "#94a3b8",
+  food: "var(--cat-food)",
+  transport: "var(--cat-transport)",
+  shopping: "var(--cat-shopping)",
+  entertainment: "var(--cat-entertainment)",
+  bills: "var(--cat-bills)",
+  health: "var(--cat-health)",
+  education: "var(--cat-education)",
+  pets: "var(--cat-pets)",
+  investment: "var(--cat-investment)",
+  travel: "var(--cat-travel)",
+  subscriptions: "var(--cat-subscriptions)",
+  loan: "var(--cat-loan)",
+  gift: "var(--cat-gift)",
+  other: "var(--cat-other)",
 };
 
 // Currency Symbols

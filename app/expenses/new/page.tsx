@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { createExpense, getRecentExpenses } from "@/actions/expenses";
+import {
+  createExpense,
+  getRecentExpenses,
+  getExpenses,
+} from "@/actions/expenses";
 import { getMeters, type Meter } from "@/actions/meters";
 import {
   EXPENSE_CATEGORIES,
@@ -9,13 +13,25 @@ import {
   MONTHS,
   BILL_TYPE_LABELS,
   CATEGORY_LABELS,
+  CATEGORY_CONFIG,
+  PAYMENT_METHODS,
+  PAYMENT_METHOD_LABELS,
+  CURRENCY_SYMBOLS,
   type ExpenseCategory,
+  type PaymentMethod,
 } from "@/lib/constants/expense";
 import { METER_TYPES } from "@/lib/constants/meter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SearchSelect } from "@/components/ui/search-select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -24,47 +40,37 @@ import {
   Building2,
   Zap,
   Clock,
-  TrendingUp,
+  CreditCard,
+  Landmark,
+  Banknote,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { format } from "date-fns";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
+import { useCurrency } from "@/lib/currency-context";
+import { cn } from "@/lib/utils";
 import type { Expense } from "@/types";
 
-const CATEGORY_BADGE_CLASS: Record<ExpenseCategory, string> = {
-  food: "bg-amber-100 text-amber-700",
-  transport: "bg-blue-100 text-blue-700",
-  shopping: "bg-pink-100 text-pink-700",
-  entertainment: "bg-purple-100 text-purple-700",
-  bills: "bg-rose-100 text-rose-700",
-  health: "bg-emerald-100 text-emerald-700",
-  education: "bg-cyan-100 text-cyan-700",
-  pets: "bg-orange-100 text-orange-700",
-  investment: "bg-violet-100 text-violet-700",
-  travel: "bg-cyan-100 text-cyan-700",
-  subscriptions: "bg-purple-100 text-purple-700",
-  loan: "bg-red-100 text-red-700",
-  gift: "bg-fuchsia-100 text-fuchsia-700",
-  other: "bg-gray-100 text-gray-700",
+const PAYMENT_METHOD_ICONS: Record<PaymentMethod, React.ElementType> = {
+  card: CreditCard,
+  bank: Landmark,
+  cash: Banknote,
 };
 
-const CATEGORY_EMOJI: Record<ExpenseCategory, string> = {
-  food: "🍔",
-  transport: "🚗",
-  shopping: "🛍️",
-  entertainment: "🎬",
-  bills: "📄",
-  health: "💊",
-  education: "📚",
-  pets: "🐾",
-  investment: "📈",
-  travel: "✈️",
-  subscriptions: "🔔",
-  loan: "🏦",
-  gift: "🎁",
-  other: "📌",
-};
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      {children}
+    </p>
+  );
+}
 
 export default function NewExpensePage() {
+  const { currency } = useCurrency();
+  const symbol =
+    CURRENCY_SYMBOLS[currency as keyof typeof CURRENCY_SYMBOLS] || "₨";
+
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [category, setCategory] = useState<ExpenseCategory | undefined>(
@@ -74,6 +80,7 @@ export default function NewExpensePage() {
   const [meterId, setMeterId] = useState<string | undefined>(undefined);
   const [meters, setMeters] = useState<Meter[]>([]);
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([]);
+  const [monthExpenses, setMonthExpenses] = useState<Expense[]>([]);
   const [date, setDate] = useState<string>("");
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -81,13 +88,14 @@ export default function NewExpensePage() {
     setDate(new Date().toISOString().split("T")[0]);
   }, []);
 
-  const loadRecentExpenses = useCallback(() => {
+  const loadActivity = useCallback(() => {
     getRecentExpenses(5).then(setRecentExpenses);
+    getExpenses(1000).then((all) => setMonthExpenses(all as Expense[]));
   }, []);
 
   useEffect(() => {
-    loadRecentExpenses();
-  }, [loadRecentExpenses]);
+    loadActivity();
+  }, [loadActivity]);
 
   useEffect(() => {
     if (billType && METER_TYPES.includes(billType as any)) {
@@ -101,7 +109,7 @@ export default function NewExpensePage() {
 
   const thisMonthTotal = useMemo(() => {
     const now = new Date();
-    return recentExpenses
+    return monthExpenses
       .filter((e) => {
         const d = new Date(e.date);
         return (
@@ -110,7 +118,7 @@ export default function NewExpensePage() {
         );
       })
       .reduce((sum, e) => sum + e.amount, 0);
-  }, [recentExpenses]);
+  }, [monthExpenses]);
 
   async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -133,361 +141,427 @@ export default function NewExpensePage() {
       setMeters([]);
       setDate(new Date().toISOString().split("T")[0]);
       formRef.current?.reset();
-      loadRecentExpenses();
+      loadActivity();
     }, 1500);
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/20 to-violet-50/20 py-6 px-4 sm:px-6 lg:px-8 animate-fade-in">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white shadow-sm border border-gray-100 text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                Add New Expense
-              </h1>
-              <p className="text-sm text-gray-500">
-                Log your transactions accurately
-              </p>
-            </div>
-          </div>
+    <div className="mx-auto max-w-6xl space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/dashboard"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Back to dashboard"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+            {format(new Date(), "EEEE, MMMM d")}
+          </p>
+          <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-foreground">
+            New Expense
+          </h1>
         </div>
+      </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
-          {/* Main Form Area */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 overflow-hidden">
-              <div className="p-6 space-y-8">
-                {success ? (
-                  <div className="py-12 flex flex-col items-center justify-center text-center">
-                    <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4 ring-4 ring-emerald-50">
-                      <CheckCircle2 className="h-8 w-8 text-emerald-600" />
-                    </div>
-                    <h2 className="text-xl font-bold text-emerald-900 mb-1">
-                      Expense Saved!
-                    </h2>
-                    <p className="text-sm text-emerald-600">
-                      Adding another entry...
-                    </p>
+      <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
+        {/* Form */}
+        <Card className="gap-0 self-start pb-0">
+          {success ? (
+            <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10 ring-8 ring-success/5">
+                <CheckCircle2 className="h-8 w-8 text-success" />
+              </div>
+              <h2 className="mt-4 text-lg font-semibold text-foreground">
+                Expense saved
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Resetting for the next entry…
+              </p>
+            </CardContent>
+          ) : (
+            <CardContent className="p-6 sm:p-8">
+              <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+                {/* Amount */}
+                <div className="space-y-2.5">
+                  <SectionLabel>Amount</SectionLabel>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-xl font-semibold text-muted-foreground">
+                      {symbol}
+                    </span>
+                    <Input
+                      id="amount"
+                      name="amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0"
+                      required
+                      autoFocus
+                      className="h-16 rounded-xl bg-muted/40 pl-12 !text-3xl font-semibold tracking-tight tabular-nums focus-visible:bg-card"
+                    />
                   </div>
-                ) : (
-                  <form
-                    ref={formRef}
-                    onSubmit={handleSubmit}
-                    className="space-y-8"
-                  >
-                    {/* Amount Section */}
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Amount
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-xl text-gray-400">
-                          Rs
-                        </span>
-                        <Input
-                          id="amount"
-                          name="amount"
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
+                </div>
+
+                {/* Category chips */}
+                <fieldset className="space-y-2.5">
+                  <legend>
+                    <SectionLabel>Category</SectionLabel>
+                  </legend>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+                    {EXPENSE_CATEGORIES.map((cat) => {
+                      const cfg = CATEGORY_CONFIG[cat];
+                      const Icon = cfg.icon;
+                      const selected = category === cat;
+                      return (
+                        <label
+                          key={cat}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2.5 transition-all duration-150",
+                            "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
+                            selected
+                              ? "border-primary/40 bg-primary/5 shadow-sm"
+                              : "border-border bg-card hover:border-foreground/20 hover:bg-muted/50",
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="category"
+                            value={cat}
+                            required
+                            checked={selected}
+                            onChange={() => {
+                              setCategory(cat);
+                              if (cat !== "bills") {
+                                setBillType(undefined);
+                                setMeterId(undefined);
+                              }
+                            }}
+                            className="sr-only"
+                          />
+                          <span
+                            className={cn(
+                              "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
+                              cfg.bg,
+                            )}
+                          >
+                            <Icon
+                              className={cn("h-3.5 w-3.5", cfg.color)}
+                              strokeWidth={2}
+                            />
+                          </span>
+                          <span
+                            className={cn(
+                              "truncate text-[13px] font-medium",
+                              selected
+                                ? "text-foreground"
+                                : "text-muted-foreground",
+                            )}
+                          >
+                            {CATEGORY_LABELS[cat]}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+
+                {/* Bill details */}
+                {category === "bills" && (
+                  <div className="space-y-4 rounded-xl border border-info/20 bg-info/5 p-4 duration-300 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center gap-1.5 text-xs font-semibold text-info">
+                      <Building2 className="h-3.5 w-3.5" />
+                      Bill details
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="billType"
+                          className="text-xs font-medium"
+                        >
+                          Bill type
+                        </Label>
+                        <SearchSelect
+                          name="billType"
+                          value={billType ?? ""}
                           required
-                          className="pl-14 h-14 text-xl font-bold text-gray-900 tracking-tight rounded-xl border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
+                          onValueChange={(v) => {
+                            setBillType(v ?? undefined);
+                            setMeterId(undefined);
+                          }}
+                          placeholder="Select bill type"
+                          searchPlaceholder="Search bill types..."
+                          options={BILL_TYPES.map((type) => ({
+                            value: type,
+                            label: BILL_TYPE_LABELS[type],
+                          }))}
                         />
                       </div>
-                    </div>
 
-                    {/* Classification Section */}
-                    <div className="space-y-4">
-                      <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                        Classification
-                      </label>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="category"
-                            className="text-xs font-semibold text-gray-700"
-                          >
-                            Category
-                          </Label>
-                          <SearchSelect
-                            name="category"
-                            value={category ?? ""}
-                            required
-                            onValueChange={(v) =>
-                              setCategory((v ?? undefined) as ExpenseCategory | undefined)
-                            }
-                            placeholder="Select category"
-                            searchPlaceholder="Search categories..."
-                            options={EXPENSE_CATEGORIES.map((cat) => ({
-                              value: cat,
-                              label: CATEGORY_LABELS[cat],
-                            }))}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="date"
-                            className="text-xs font-semibold text-gray-700"
-                          >
-                            Date
-                          </Label>
-                          <Input
-                            id="date"
-                            name="date"
-                            type="date"
-                            required
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="h-11 w-full rounded-lg border-gray-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Bill Details */}
-                      {category === "bills" && (
-                        <div className="grid gap-4 sm:grid-cols-2 mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/80 animate-in fade-in slide-in-from-top-2 duration-300">
+                      {billType && METER_TYPES.includes(billType as any) && (
+                        <>
                           <div className="space-y-2">
                             <Label
-                              htmlFor="billType"
-                              className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
+                              htmlFor="meterId"
+                              className="flex items-center gap-1.5 text-xs font-medium"
                             >
-                              <Building2 className="h-3.5 w-3.5" /> Bill Type
+                              <Receipt className="h-3.5 w-3.5 text-muted-foreground" />{" "}
+                              Meter
                             </Label>
                             <SearchSelect
-                              name="billType"
-                              value={billType ?? ""}
+                              name="meterId"
+                              value={meterId ?? ""}
                               required
-                              onValueChange={(v) => {
-                                setBillType(v ?? undefined);
-                                setMeterId(undefined);
-                              }}
-                              placeholder="Select bill type"
-                              searchPlaceholder="Search bill types..."
-                              options={BILL_TYPES.map((type) => ({
-                                value: type,
-                                label: BILL_TYPE_LABELS[type],
+                              onValueChange={(v) => setMeterId(v ?? undefined)}
+                              placeholder="Select meter"
+                              searchPlaceholder="Search meters..."
+                              options={meters.map((meter) => ({
+                                value: meter._id,
+                                label: `${meter.name} (Ref: ${meter.refNo})`,
                               }))}
                             />
                           </div>
-
-                          {billType &&
-                            METER_TYPES.includes(billType as any) && (
-                              <div className="space-y-2">
-                                <Label
-                                  htmlFor="meterId"
-                                  className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                >
-                                  <Receipt className="h-3.5 w-3.5" /> Select
-                                  Meter
-                                </Label>
-                                <SearchSelect
-                                  name="meterId"
-                                  value={meterId ?? ""}
-                                  required
-                                  onValueChange={(v) =>
-                                    setMeterId(v ?? undefined)
-                                  }
-                                  placeholder="Select meter"
-                                  searchPlaceholder="Search meters..."
-                                  options={meters.map((meter) => ({
-                                    value: meter._id,
-                                    label: `${meter.name} (Ref: ${meter.refNo})`,
-                                  }))}
-                                />
-                              </div>
-                            )}
-
-                          {billType &&
-                            METER_TYPES.includes(billType as any) && (
-                              <>
-                                <div className="space-y-2">
-                                  <Label
-                                    htmlFor="month"
-                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                  >
-                                    <Clock className="h-3.5 w-3.5" /> Month
-                                  </Label>
-                                  <SearchSelect
-                                    name="month"
-                                    required
-                                    placeholder="Select month"
-                                    searchPlaceholder="Search months..."
-                                    options={MONTHS.map((month) => ({
-                                      value: month,
-                                      label: month,
-                                    }))}
-                                  />
-                                </div>
-                                <div className="space-y-2">
-                                  <Label
-                                    htmlFor="units"
-                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                  >
-                                    <Zap className="h-3.5 w-3.5" /> Units
-                                  </Label>
-                                  <Input
-                                    id="units"
-                                    name="units"
-                                    type="number"
-                                    placeholder="150"
-                                    className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                                  />
-                                </div>
-                                <div className="space-y-2 sm:col-span-2">
-                                  <Label
-                                    htmlFor="reading"
-                                    className="text-xs font-bold text-indigo-900 flex items-center gap-1.5"
-                                  >
-                                    <Receipt className="h-3.5 w-3.5" /> Reading
-                                  </Label>
-                                  <Input
-                                    id="reading"
-                                    name="reading"
-                                    type="number"
-                                    step="any"
-                                    placeholder="150.5"
-                                    className="h-11 rounded-lg border-indigo-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                                  />
-                                </div>
-                              </>
-                            )}
-                        </div>
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="month"
+                              className="flex items-center gap-1.5 text-xs font-medium"
+                            >
+                              <Clock className="h-3.5 w-3.5 text-muted-foreground" />{" "}
+                              Month
+                            </Label>
+                            <SearchSelect
+                              name="month"
+                              required
+                              placeholder="Select month"
+                              searchPlaceholder="Search months..."
+                              options={MONTHS.map((month) => ({
+                                value: month,
+                                label: month,
+                              }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="units"
+                              className="flex items-center gap-1.5 text-xs font-medium"
+                            >
+                              <Zap className="h-3.5 w-3.5 text-muted-foreground" />{" "}
+                              Units
+                            </Label>
+                            <Input
+                              id="units"
+                              name="units"
+                              type="number"
+                              placeholder="150"
+                              className="h-10 rounded-lg"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label
+                              htmlFor="reading"
+                              className="flex items-center gap-1.5 text-xs font-medium"
+                            >
+                              <Receipt className="h-3.5 w-3.5 text-muted-foreground" />{" "}
+                              Reading
+                            </Label>
+                            <Input
+                              id="reading"
+                              name="reading"
+                              type="number"
+                              step="any"
+                              placeholder="150.5"
+                              className="h-10 rounded-lg"
+                            />
+                          </div>
+                        </>
                       )}
                     </div>
-
-                    {/* Description Section */}
-                    <div className="space-y-3">
-                      <Label
-                        htmlFor="description"
-                        className="text-xs font-bold text-gray-500 uppercase tracking-wider"
-                      >
-                        Description
-                      </Label>
-                      <Input
-                        id="description"
-                        name="description"
-                        placeholder="What was this expense for?"
-                        className="h-11 rounded-lg border-gray-200 bg-white focus:border-indigo-500 focus:ring-indigo-500/20"
-                      />
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-3 pt-2">
-                      <Link href="/dashboard" className="flex-1 sm:flex-none">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className="w-full sm:w-auto h-11 px-6 rounded-xl font-semibold border-gray-200"
-                        >
-                          Cancel
-                        </Button>
-                      </Link>
-                      <Button
-                        type="submit"
-                        className="flex-1 sm:flex-none h-11 px-8 rounded-xl font-semibold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-600/25"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Saving...
-                          </span>
-                        ) : (
-                          "Save Expense"
-                        )}
-                      </Button>
-                    </div>
-                  </form>
+                  </div>
                 )}
-              </div>
+
+                {/* Payment method + date */}
+                <div className="grid gap-6 sm:grid-cols-[1fr_180px]">
+                  <fieldset className="space-y-2.5">
+                    <legend>
+                      <SectionLabel>Paid with</SectionLabel>
+                    </legend>
+                    <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted/60 p-1">
+                      {PAYMENT_METHODS.map((method) => {
+                        const Icon = PAYMENT_METHOD_ICONS[method];
+                        return (
+                          <label
+                            key={method}
+                            className={cn(
+                              "flex cursor-pointer flex-col items-center gap-1 rounded-lg px-2 py-2 text-center transition-all duration-150",
+                              "has-[:checked]:bg-card has-[:checked]:shadow-sm has-[:checked]:ring-1 has-[:checked]:ring-foreground/10",
+                              "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
+                            )}
+                          >
+                            <input
+                              type="radio"
+                              name="paymentMethod"
+                              value={method}
+                              defaultChecked={method === "cash"}
+                              className="peer sr-only"
+                            />
+                            <Icon
+                              className="h-4 w-4 text-muted-foreground peer-checked:text-primary"
+                              strokeWidth={2}
+                            />
+                            <span className="text-[11px] font-medium text-muted-foreground peer-checked:text-foreground">
+                              {PAYMENT_METHOD_LABELS[method]}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </fieldset>
+
+                  <div className="space-y-2.5">
+                    <SectionLabel>Date</SectionLabel>
+                    <Input
+                      id="date"
+                      name="date"
+                      type="date"
+                      required
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="h-10 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2.5">
+                  <SectionLabel>Description</SectionLabel>
+                  <Input
+                    id="description"
+                    name="description"
+                    placeholder="What was this expense for? (optional)"
+                    className="h-10 rounded-lg"
+                  />
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-3 pt-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-10 rounded-sm px-5 font-medium"
+                    render={<Link href="/dashboard" />}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="h-10 rounded-sm px-7 font-semibold shadow-md"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Saving…
+                      </span>
+                    ) : (
+                      "Save Expense"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Side rail */}
+        <div className="space-y-5">
+          {/* Month-to-date tile */}
+          <div className="hero-panel relative overflow-hidden rounded-2xl p-5 text-white shadow-md ring-1 ring-white/10">
+            <div
+              className="hero-grid pointer-events-none absolute inset-0"
+              aria-hidden
+            />
+            <div className="relative">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                Spent this month
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight">
+                <CurrencyDisplay amount={thisMonthTotal} />
+              </p>
+              <p className="mt-1 text-xs text-white/50">
+                {format(new Date(), "MMMM yyyy")} · updates as you save
+              </p>
             </div>
           </div>
 
-          {/* Sidebar - Recent Expenses */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-gray-100/80 overflow-hidden">
-              <div className="p-4 border-b border-gray-100 flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-indigo-100 flex items-center justify-center">
-                  <TrendingUp className="h-4 w-4 text-indigo-600" />
-                </div>
+          {/* Recent entries */}
+          <Card className="gap-0 pb-0">
+            <CardHeader className="border-b !pb-4">
+              <CardTitle className="text-sm font-semibold">
+                Recent Entries
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Your last 5 expenses
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3">
+              {recentExpenses.length === 0 ? (
+                <p className="py-8 text-center text-sm text-muted-foreground">
+                  No expenses yet
+                </p>
+              ) : (
                 <div>
-                  <h3 className="text-sm font-bold text-gray-900">
-                    Recent Expenses
-                  </h3>
-                  <p className="text-xs text-gray-500">Last 5 entries</p>
-                </div>
-              </div>
-              <div className="divide-y divide-gray-100">
-                {recentExpenses.length === 0 ? (
-                  <div className="p-6 text-center">
-                    <p className="text-sm text-gray-400">No expenses yet</p>
-                  </div>
-                ) : (
-                  recentExpenses.map((expense) => {
-                    const cat = expense.category as ExpenseCategory;
+                  {recentExpenses.map((expense) => {
+                    const cfg =
+                      CATEGORY_CONFIG[expense.category as ExpenseCategory] ??
+                      CATEGORY_CONFIG.other;
+                    const Icon = cfg.icon;
                     return (
                       <div
                         key={expense._id}
-                        className="p-3 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div
-                              className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold capitalize ${CATEGORY_BADGE_CLASS[cat] ?? "bg-gray-100 text-gray-700"}`}
-                            >
-                              {CATEGORY_EMOJI[cat] ?? "📌"}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {expense.description || expense.category}
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(expense.date).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-bold text-gray-900">
-                              <CurrencyDisplay amount={expense.amount} />
-                            </p>
-                          </div>
+                        <div
+                          className={cn(
+                            "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                            cfg.bg,
+                          )}
+                        >
+                          <Icon
+                            className={cn("h-4 w-4", cfg.color)}
+                            strokeWidth={2}
+                          />
                         </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[13px] font-medium leading-tight text-foreground">
+                            {expense.description ||
+                              CATEGORY_LABELS[
+                                expense.category as ExpenseCategory
+                              ] ||
+                              expense.category}
+                          </p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">
+                            {format(new Date(expense.date), "MMM d")}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-[13px] font-semibold tabular-nums text-foreground">
+                          −<CurrencyDisplay amount={expense.amount} />
+                        </span>
                       </div>
                     );
-                  })
-                )}
-              </div>
+                  })}
+                </div>
+              )}
               <Link
                 href="/expenses"
-                className="block p-3 text-center text-xs font-semibold text-indigo-600 hover:bg-indigo-50 transition-colors border-t border-gray-100"
+                className="mt-2 flex items-center justify-center gap-1 rounded-lg border-t py-2.5 text-xs font-medium text-primary transition-colors bg-primary/5"
               >
-                View all expenses →
+                View all expenses
+                <ArrowRight className="h-3 w-3" />
               </Link>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white shadow-lg shadow-indigo-600/25">
-              <p className="text-xs font-medium text-indigo-200 uppercase tracking-wider mb-1">
-                This Month's Total
-              </p>
-              <p className="text-2xl font-bold">
-                {thisMonthTotal > 0 ? (
-                  <CurrencyDisplay amount={thisMonthTotal} />
-                ) : (
-                  "Rs 0"
-                )}
-              </p>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

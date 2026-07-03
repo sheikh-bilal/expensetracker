@@ -1,16 +1,13 @@
-import { Sidebar } from "@/components/layout/sidebar";
-import { Header } from "@/components/layout/header";
+import { cookies } from "next/headers";
+import { AppShell } from "@/components/layout/app-shell";
 
-export default function ProfileLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-6 scrollbar-hide custom-scrollbar">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
+export default async function ProfileLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const cookieStore = await cookies();
+  const defaultSidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
+
+  return <AppShell defaultSidebarOpen={defaultSidebarOpen}>{children}</AppShell>;
 }

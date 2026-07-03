@@ -32,3 +32,14 @@ export function formatMonthYear(date: Date | string): string {
     year: "numeric",
   }).format(new Date(date));
 }
+
+/** Percent change between the last two values of a chronological series. */
+export function trendFrom(values: number[]): { value: number; isPositive: boolean | null } | undefined {
+  if (values.length < 2) return undefined;
+  const previous = values[values.length - 2];
+  const current = values[values.length - 1];
+  if (previous === 0 && current === 0) return { value: 0, isPositive: null };
+  if (previous === 0) return { value: 100, isPositive: true };
+  const change = ((current - previous) / previous) * 100;
+  return { value: Math.round(Math.abs(change) * 10) / 10, isPositive: change === 0 ? null : change > 0 };
+}

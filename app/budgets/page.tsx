@@ -342,7 +342,7 @@ export default function BudgetsPage() {
           </section>
 
           {/* Health tiles */}
-          <Card className="gap-0 p-0">
+          <Card className="gap-0 p-0 [--card-spacing:0px]">
             <CardContent className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border/60 p-0 lg:grid-cols-4">
               {[
                 {

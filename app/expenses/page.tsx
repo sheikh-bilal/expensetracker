@@ -238,7 +238,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Stat tiles */}
-      <Card className="gap-0 p-0 animate-fade-in">
+      <Card className="gap-0 [--card-spacing:0px] animate-fade-in">
         <CardContent className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border/60 p-0 lg:grid-cols-4">
           {statTiles.map(({ label, icon: Icon, value, sub }) => (
             <div key={label} className="flex flex-col gap-3 bg-card p-5">
@@ -429,7 +429,13 @@ export default function ExpensesPage() {
 
                         <TableCell className="py-3.5">
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground">
-                            <span className={cn("h-1.5 w-1.5 rounded-full", cfg.color.replace("text-", "bg-"))} aria-hidden />
+                            <span
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                cfg.color.replace("text-", "bg-"),
+                              )}
+                              aria-hidden
+                            />
                             {label}
                           </span>
                         </TableCell>

@@ -102,7 +102,9 @@ function getDaysUntil(date: Date): number {
   today.setHours(0, 0, 0, 0);
   const target = new Date(date);
   target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  return Math.ceil(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
 }
 
 export default function SubscriptionsPage() {
@@ -255,7 +257,7 @@ export default function SubscriptionsPage() {
       </div>
 
       {/* Stat tiles */}
-      <Card className="gap-0 p-0 animate-fade-in">
+      <Card className="gap-0 [--card-spacing:0px] animate-fade-in">
         <CardContent className="grid grid-cols-2 gap-px overflow-hidden rounded-xl bg-border/60 p-0 lg:grid-cols-4">
           {statTiles.map(({ label, icon: Icon, value, sub }) => (
             <div key={label} className="flex flex-col gap-3 bg-card p-5">
@@ -618,7 +620,10 @@ export default function SubscriptionsPage() {
                   value={formCategory}
                   onValueChange={(v) => setFormCategory(v ?? "")}
                 >
-                  <SelectTrigger id="category" className="h-10 w-full rounded-lg">
+                  <SelectTrigger
+                    id="category"
+                    className="h-10 w-full rounded-lg"
+                  >
                     <SelectValue placeholder="Select category">
                       {(value) =>
                         CATEGORIES.find((c) => c.value === value)?.label ??

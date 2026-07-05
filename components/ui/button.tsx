@@ -1,3 +1,4 @@
+import { isValidElement } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 
@@ -44,11 +45,19 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  nativeButton,
   ...props
 }: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+  // Base UI assumes a native <button> unless told otherwise; a `render` prop
+  // (e.g. render={<Link />}) swaps in a different element, so flag it.
+  const rendersNativeButton =
+    props.render == null ||
+    (isValidElement(props.render) && props.render.type === "button")
+
   return (
     <ButtonPrimitive
       data-slot="button"
+      nativeButton={nativeButton ?? rendersNativeButton}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
     />

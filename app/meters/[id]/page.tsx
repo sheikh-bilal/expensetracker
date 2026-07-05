@@ -3,8 +3,23 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { PageLoader } from "@/components/ui/page-loader";
-import { ArrowLeft, Trash2, Calculator } from "lucide-react";
+import {
+  ArrowLeft,
+  Trash2,
+  Calculator,
+  Hash,
+  Sigma,
+  Activity,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,6 +27,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { getMeterById, deleteMeter, type Meter } from "@/actions/meters";
 import {
   getMeterReadings,
@@ -36,6 +60,23 @@ const YEAR_FILTER_LABELS = {
   last: "Last Year",
   all: "All Time",
 };
+
+function UnitsTooltip({ active, payload, label, unit }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-popover-foreground shadow-md">
+      <p className="mb-0.5 text-xs text-muted-foreground">{label}</p>
+      <p className="text-sm font-semibold tabular-nums">
+        {payload[0].value.toLocaleString()} {unit}
+      </p>
+      {payload[0].payload.reading != null && (
+        <p className="mt-0.5 text-xs text-muted-foreground">
+          Reading: {payload[0].payload.reading.toLocaleString()}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export default function MeterDetailPage() {
   const params = useParams();
@@ -93,17 +134,35 @@ export default function MeterDetailPage() {
     });
   }, [readings, yearFilter]);
 
-  if (loading) return <PageLoader />;
+  const chartData = useMemo(
+    () =>
+      [...filteredReadings]
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt || "").getTime() -
+            new Date(b.createdAt || "").getTime(),
+        )
+        .map((r) => ({
+          month: r.month.slice(0, 3),
+          units: r.units ?? 0,
+          reading: r.reading,
+        })),
+    [filteredReadings],
+  );
+
+  if (loading) return <PageLoader label="Loading meter" />;
 
   if (!meter) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
         <p className="text-sm font-medium text-foreground">Meter not found</p>
-        <Link href="/meters">
-          <Button variant="outline" className="mt-4">
-            Back to Meters
-          </Button>
-        </Link>
+        <Button
+          variant="outline"
+          className="rounded-lg"
+          render={<Link href="/meters" />}
+        >
+          Back to Meters
+        </Button>
       </div>
     );
   }
@@ -115,233 +174,274 @@ export default function MeterDetailPage() {
   const totalUnits = getTotalConsumption(readings);
   const latestReadingValue = getLatestReading(readings);
 
+  const statTiles = [
+    {
+      label: "Total readings",
+      icon: Hash,
+      value: totalReadings.toLocaleString(),
+      sub: "recorded overall",
+    },
+    {
+      label: "Total consumed",
+      icon: Sigma,
+      value: `${totalUnits.toLocaleString()} ${config.unit}`,
+      sub: "across all readings",
+    },
+    {
+      label: "Latest reading",
+      icon: Activity,
+      value:
+        latestReadingValue !== null ? latestReadingValue.toLocaleString() : "—",
+      sub: "on the meter",
+    },
+  ];
+
   return (
-    <div className="space-y-6 animate-fade-in p-2">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/meters">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/meters"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Back to meters"
+          >
             <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div className="flex-1 flex items-center gap-3">
+          </Link>
           <div
             className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br shadow-sm",
-              config.gradient,
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl",
+              config.bg,
             )}
           >
-            <Icon className="h-6 w-6 text-white" strokeWidth={2} />
+            <Icon className={cn("h-5 w-5", config.color)} strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{meter.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              {METER_TYPE_LABELS[meter.type as MeterType]} • Ref: {meter.refNo}
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              {METER_TYPE_LABELS[meter.type as MeterType]} · Ref {meter.refNo}
             </p>
+            <h1 className="mt-0.5 text-2xl font-semibold tracking-tight text-foreground">
+              {meter.name}
+            </h1>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
-            size="sm"
-            className="h-9 rounded-lg border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-300"
+            className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
             onClick={() => setCalcOpen(true)}
           >
-            <Calculator className="h-4 w-4 mr-1.5" />
+            <Calculator className="h-4 w-4" />
             Calculate Bill
           </Button>
           <Button
             variant="outline"
-            size="sm"
-            className="h-9 rounded-lg border-rose-200 text-rose-600 hover:bg-rose-50 hover:border-rose-300"
+            className="h-9 gap-1.5 rounded-lg text-sm font-medium text-danger hover:bg-danger/10 hover:text-danger"
             onClick={handleDelete}
           >
-            <Trash2 className="h-4 w-4 mr-1.5" />
+            <Trash2 className="h-4 w-4" />
             Delete
           </Button>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {[
-          { label: "Total Readings", value: totalReadings, unit: null },
-          {
-            label: "Total Consumed",
-            value: totalUnits.toLocaleString(),
-            unit: config.unit,
-          },
-          {
-            label: "Latest Reading",
-            value:
-              latestReadingValue !== null
-                ? latestReadingValue.toLocaleString()
-                : "—",
-            unit: null,
-          },
-        ].map(({ label, value, unit }) => (
-          <div
-            key={label}
-            className={cn(
-              "rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] p-5 border-t-2",
-              config.borderColor,
-            )}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wide">
-                {label}
-              </p>
-              <div
-                className={cn(
-                  "h-8 w-8 rounded-lg flex items-center justify-center",
-                  config.bg,
-                )}
-              >
-                <Icon className={cn("h-4 w-4", config.color)} strokeWidth={2} />
-              </div>
-            </div>
-            <p className="text-3xl font-black text-foreground">
-              {value}
-              {unit && (
-                <span className="text-base font-medium text-muted-foreground ml-1">
-                  {unit}
-                </span>
-              )}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Consumption Analysis */}
-      <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div className="p-6 border-b border-border/50">
-          <h2 className="text-base font-bold text-foreground">
-            Consumption Analysis
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Monthly consumption and cost trends
-          </p>
-        </div>
-        {readings.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              No readings recorded yet. Add your first reading to see the
-              analysis.
-            </p>
-          </div>
-        ) : (
-          <div className="p-6 grid gap-4 sm:grid-cols-3">
-            {readings.slice(0, 3).map((reading) => (
-              <div
-                key={reading._id}
-                className={cn("p-4 rounded-xl", config.bg)}
-              >
-                <p className={cn("text-xs font-semibold mb-1", config.color)}>
-                  {reading.month}
-                </p>
-                <p className="text-lg font-bold text-foreground">
-                  {reading.units?.toLocaleString()}{" "}
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {config.unit}
-                  </span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Reading: {reading.reading?.toLocaleString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Reading History */}
-      <div className="rounded-2xl bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.02),0_0_0_1px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div className="p-6 border-b border-border/50 flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-bold text-foreground">
-              Reading History
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              All recorded readings for this meter
-            </p>
-          </div>
-          <Select
-            value={yearFilter}
-            onValueChange={(v) => setYearFilter(v ?? "current")}
-          >
-            <SelectTrigger className="h-9 w-40 rounded-lg">
-              <SelectValue>
-                {(value) =>
-                  YEAR_FILTER_LABELS[
-                    value as keyof typeof YEAR_FILTER_LABELS
-                  ] ?? value
-                }
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="current">Current Year</SelectItem>
-              <SelectItem value="last">Last Year</SelectItem>
-              <SelectItem value="all">All Time</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {filteredReadings.length === 0 ? (
-          <div className="p-8 text-center">
-            <p className="text-sm text-muted-foreground">
-              {readings.length === 0
-                ? "No readings recorded yet. Add your first reading through expense entry."
-                : "No readings found for the selected time period."}
-            </p>
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            {filteredReadings.map((reading) => (
-              <div
-                key={reading._id}
-                className="p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={cn(
-                        "h-10 w-10 rounded-lg flex items-center justify-center",
-                        config.bg,
-                      )}
-                    >
-                      <span className={cn("text-xs font-bold", config.color)}>
-                        {reading.month.slice(0, 3).toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-foreground">
-                        {reading.month}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(reading.createdAt || "").toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-foreground">
-                      {reading.reading?.toLocaleString()}
-                    </p>
-                    <div className="flex items-center gap-1.5 justify-end mt-0.5">
-                      <span
-                        className={cn("text-xs font-semibold", config.color)}
-                      >
-                        {reading.units?.toLocaleString()} {config.unit}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        · meter reading
-                      </span>
-                    </div>
-                  </div>
+      <div className="stagger-children space-y-5 [&>*]:animate-fade-in">
+        {/* Stat tiles */}
+        <Card className="gap-0 p-0 [--card-spacing:0px]">
+          <CardContent className="grid grid-cols-1 gap-px overflow-hidden rounded-xl bg-border/60 p-0 sm:grid-cols-3">
+            {statTiles.map(({ label, icon: TileIcon, value, sub }) => (
+              <div key={label} className="flex flex-col gap-3 bg-card p-5">
+                <div
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-lg",
+                    config.bg,
+                  )}
+                >
+                  <TileIcon
+                    className={cn("h-4 w-4", config.color)}
+                    strokeWidth={2}
+                  />
+                </div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {label}
+                  </p>
+                  <p className="mt-1 text-lg font-semibold tabular-nums text-foreground">
+                    {value}
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>
                 </div>
               </div>
             ))}
-          </div>
-        )}
+          </CardContent>
+        </Card>
+
+        {/* Consumption trend */}
+        <Card className="gap-0 p-0">
+          <CardHeader className="border-b !pb-4 pt-5">
+            <CardTitle className="text-sm font-semibold">
+              Consumption Trend
+            </CardTitle>
+            <CardDescription className="text-xs">
+              Units used per reading · {config.unit}
+            </CardDescription>
+            <CardAction>
+              <Select
+                value={yearFilter}
+                onValueChange={(v) => setYearFilter(v ?? "current")}
+              >
+                <SelectTrigger className="h-8 w-36 rounded-lg text-xs">
+                  <SelectValue>
+                    {(value) =>
+                      YEAR_FILTER_LABELS[
+                        value as keyof typeof YEAR_FILTER_LABELS
+                      ] ?? value
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Current Year</SelectItem>
+                  <SelectItem value="last">Last Year</SelectItem>
+                  <SelectItem value="all">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardAction>
+          </CardHeader>
+          <CardContent className="py-5">
+            {chartData.length === 0 ? (
+              <div className="flex h-[200px] flex-col items-center justify-center text-center">
+                <p className="text-sm font-medium text-foreground">
+                  No readings in this period
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {readings.length === 0
+                    ? "Readings are added automatically when you log a bill expense for this meter."
+                    : "Try a different time period."}
+                </p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={220}>
+                <BarChart data={chartData} barSize={24} barCategoryGap="30%">
+                  <CartesianGrid
+                    vertical={false}
+                    stroke="hsl(var(--border) / 0.6)"
+                    strokeWidth={1}
+                  />
+                  <XAxis
+                    dataKey="month"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 11,
+                    }}
+                    dy={8}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{
+                      fill: "hsl(var(--muted-foreground))",
+                      fontSize: 11,
+                    }}
+                    width={44}
+                  />
+                  <Tooltip
+                    content={<UnitsTooltip unit={config.unit} />}
+                    cursor={{ fill: "hsl(var(--muted) / 0.6)", radius: 6 }}
+                  />
+                  <Bar
+                    dataKey="units"
+                    fill={config.chart}
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Reading history */}
+        <Card className="gap-0 p-0">
+          <CardHeader className="border-b !pb-4 pt-5">
+            <CardTitle className="text-sm font-semibold">
+              Reading History
+            </CardTitle>
+            <CardDescription className="text-xs">
+              {filteredReadings.length} reading
+              {filteredReadings.length !== 1 ? "s" : ""} ·{" "}
+              {
+                YEAR_FILTER_LABELS[
+                  yearFilter as keyof typeof YEAR_FILTER_LABELS
+                ]
+              }
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="p-3">
+            {filteredReadings.length === 0 ? (
+              <div className="px-4 py-10 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {readings.length === 0
+                    ? "No readings recorded yet. Add your first reading through expense entry."
+                    : "No readings found for the selected time period."}
+                </p>
+              </div>
+            ) : (
+              <div>
+                {filteredReadings.map((reading) => (
+                  <div
+                    key={reading._id}
+                    className="flex items-center justify-between gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted/60"
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className={cn(
+                          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                          config.bg,
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "text-[10px] font-bold uppercase",
+                            config.color,
+                          )}
+                        >
+                          {reading.month.slice(0, 3)}
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[13px] font-medium leading-tight text-foreground">
+                          {reading.month}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {new Date(reading.createdAt || "").toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-[13px] font-semibold tabular-nums text-foreground">
+                        {reading.units?.toLocaleString()}{" "}
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {config.unit}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 text-xs tabular-nums text-muted-foreground">
+                        reading {reading.reading?.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <ConfirmDialog

@@ -13,6 +13,7 @@ import {
   Bell,
   Landmark,
   Gift,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,6 +32,7 @@ export const EXPENSE_CATEGORIES = [
   "subscriptions",
   "loan",
   "gift",
+  "wedding",
   "other",
 ] as const;
 
@@ -50,6 +52,7 @@ export const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   subscriptions: "Subscriptions",
   loan: "Loan",
   gift: "Gift",
+  wedding: "Wedding",
   other: "Other",
 };
 
@@ -135,6 +138,12 @@ export const CATEGORY_CONFIG: Record<
     bg: "bg-fuchsia-50",
     color: "text-fuchsia-600",
     badge: "bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200",
+  },
+  wedding: {
+    icon: PartyPopper,
+    bg: "bg-rose-50",
+    color: "text-rose-500",
+    badge: "bg-rose-100 text-rose-600 border-rose-200",
   },
   other: {
     icon: MoreHorizontal,
@@ -238,6 +247,7 @@ export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   subscriptions: "var(--cat-subscriptions)",
   loan: "var(--cat-loan)",
   gift: "var(--cat-gift)",
+  wedding: "var(--cat-wedding)",
   other: "var(--cat-other)",
 };
 

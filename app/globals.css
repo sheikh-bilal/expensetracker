@@ -84,6 +84,7 @@
     --cat-subscriptions: #9333ea;
     --cat-loan: #a31212;
     --cat-gift: #c026d3;
+    --cat-wedding: #d4af37;
     --cat-other: #64748b;
 
     /* Payment-method series — same validated hues, fixed assignment */
@@ -161,6 +162,7 @@
     --cat-subscriptions: #b07ce8;
     --cat-loan: #f08a8a;
     --cat-gift: #e05fe0;
+    --cat-wedding: #e0bb47;
     --cat-other: #9aa1ad;
 
     --pay-card: #9085e9;

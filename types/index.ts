@@ -14,6 +14,7 @@ export type Category =
   | "subscriptions"
   | "loan"
   | "gift"
+  | "wedding"
   | "other";
 
 export interface Expense {

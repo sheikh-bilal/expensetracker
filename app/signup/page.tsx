@@ -13,10 +13,11 @@ import {
   Lock,
   User,
   ArrowRight,
-  Shield,
+  ShieldCheck,
   CheckCircle2,
 } from "lucide-react";
 import { Toaster, useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -43,7 +44,7 @@ export default function SignupPage() {
       toast.error("Registration failed", msg);
       setIsLoading(false);
     } else if (result?.success) {
-      toast.success("Account created!", "Welcome to ExpenseTrack.");
+      toast.success("Account created!", "Welcome to Fintrax.");
       setTimeout(() => {
         router.push("/dashboard");
         router.refresh();
@@ -61,65 +62,70 @@ export default function SignupPage() {
     if (/[^a-zA-Z\d]/.test(password)) strength++;
 
     const levels = [
-      { label: "Weak", color: "bg-rose-500" },
-      { label: "Fair", color: "bg-amber-500" },
-      { label: "Good", color: "bg-emerald-500" },
-      { label: "Strong", color: "bg-emerald-600" },
+      { label: "Weak", color: "bg-danger" },
+      { label: "Fair", color: "bg-warning" },
+      { label: "Good", color: "bg-success" },
+      { label: "Strong", color: "bg-success" },
     ];
     return {
       strength,
-      ...(levels[strength - 1] || { label: "Weak", color: "bg-rose-500" }),
+      ...(levels[strength - 1] || { label: "Weak", color: "bg-danger" }),
     };
   };
 
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/40 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background p-4">
       <Toaster toasts={toasts} removeToast={removeToast} />
-      {/* Background Decorative Elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-violet-400/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none" />
 
-      <div className="w-full max-w-md relative z-10">
-        {/* Brand Logo */}
-        <div className="flex items-center justify-center gap-3 mb-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30">
-            <Wallet className="h-7 w-7" strokeWidth={2} />
+      <div
+        className="hero-grid pointer-events-none absolute inset-0 opacity-40"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-[42rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl"
+        aria-hidden
+      />
+
+      <div className="relative z-10 w-full max-w-[400px]">
+        {/* Brand */}
+        <div className="mb-9 flex flex-col items-center gap-3 text-center">
+          <div className="hero-panel flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-[0_10px_24px_-6px_hsl(233_45%_11%/0.5)] ring-1 ring-white/10">
+            <Wallet className="h-5 w-5" strokeWidth={2} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              ExpenseTrack
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
+              Fintrax
             </h1>
-            <p className="text-xs text-gray-500 font-medium">
-              Smart Expense Tracking
+            <p className="mt-0.5 text-[10.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Personal Finance
             </p>
           </div>
         </div>
 
-        {/* Signup Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-[0_8px_40px_rgb(0,0,0,0.06)] border border-gray-100/80 p-8">
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-gray-900">
+        {/* Card */}
+        <div className="rounded-2xl border border-border bg-card p-7 shadow-lg">
+          <div className="mb-6">
+            <h2 className="text-lg font-bold tracking-tight text-foreground">
               Create your account
             </h2>
-            <p className="text-sm text-gray-500 mt-1.5">
+            <p className="mt-1 text-[13px] text-muted-foreground">
               Start tracking your expenses smartly today
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Name Field */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label
                 htmlFor="name"
-                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
               >
                 Full Name
               </Label>
               <div className="relative">
                 <User
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   strokeWidth={2}
                 />
                 <Input
@@ -127,7 +133,7 @@ export default function SignupPage() {
                   name="name"
                   type="text"
                   placeholder="John Doe"
-                  className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
+                  className="h-11 rounded-xl pl-11 text-sm"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
@@ -136,24 +142,23 @@ export default function SignupPage() {
                 />
               </div>
               {errors.name && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1">
-                  <span className="w-1 h-1 bg-rose-600 rounded-full" />
+                <p className="flex items-center gap-1 text-xs font-medium text-danger">
+                  <span className="h-1 w-1 rounded-full bg-danger" />
                   {errors.name[0]}
                 </p>
               )}
             </div>
 
-            {/* Email Field */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label
                 htmlFor="email"
-                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
               >
                 Email Address
               </Label>
               <div className="relative">
                 <Mail
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   strokeWidth={2}
                 />
                 <Input
@@ -161,7 +166,7 @@ export default function SignupPage() {
                   name="email"
                   type="email"
                   placeholder="you@example.com"
-                  className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
+                  className="h-11 rounded-xl pl-11 text-sm"
                   value={formData.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
@@ -170,24 +175,23 @@ export default function SignupPage() {
                 />
               </div>
               {errors.email && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1">
-                  <span className="w-1 h-1 bg-rose-600 rounded-full" />
+                <p className="flex items-center gap-1 text-xs font-medium text-danger">
+                  <span className="h-1 w-1 rounded-full bg-danger" />
                   {errors.email[0]}
                 </p>
               )}
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label
                 htmlFor="password"
-                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
               >
                 Password
               </Label>
               <div className="relative">
                 <Lock
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   strokeWidth={2}
                 />
                 <Input
@@ -195,7 +199,7 @@ export default function SignupPage() {
                   name="password"
                   type="password"
                   placeholder="••••••••"
-                  className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
+                  className="h-11 rounded-xl pl-11 text-sm"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -203,25 +207,30 @@ export default function SignupPage() {
                   required
                 />
               </div>
-              {/* Password Strength Indicator */}
               {formData.password && (
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 pt-0.5">
                   <div className="flex gap-1">
                     {[1, 2, 3, 4].map((level) => (
                       <div
                         key={level}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
+                        className={cn(
+                          "h-1 flex-1 rounded-full transition-colors",
                           level <= passwordStrength.strength
                             ? passwordStrength.color
-                            : "bg-gray-200"
-                        }`}
+                            : "bg-muted",
+                        )}
                       />
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Password strength:{" "}
                     <span
-                      className={`font-semibold ${passwordStrength.strength >= 3 ? "text-emerald-600" : "text-gray-600"}`}
+                      className={cn(
+                        "font-semibold",
+                        passwordStrength.strength >= 3
+                          ? "text-success"
+                          : "text-foreground",
+                      )}
                     >
                       {passwordStrength.label}
                     </span>
@@ -229,24 +238,23 @@ export default function SignupPage() {
                 </div>
               )}
               {errors.password && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1">
-                  <span className="w-1 h-1 bg-rose-600 rounded-full" />
+                <p className="flex items-center gap-1 text-xs font-medium text-danger">
+                  <span className="h-1 w-1 rounded-full bg-danger" />
                   {errors.password[0]}
                 </p>
               )}
             </div>
 
-            {/* Confirm Password Field */}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label
                 htmlFor="confirmPassword"
-                className="text-xs font-semibold text-gray-700 uppercase tracking-wide"
+                className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
               >
                 Confirm Password
               </Label>
               <div className="relative">
                 <Lock
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"
+                  className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                   strokeWidth={2}
                 />
                 <Input
@@ -254,7 +262,7 @@ export default function SignupPage() {
                   name="confirmPassword"
                   type="password"
                   placeholder="••••••••"
-                  className="h-11 pl-11 text-sm rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-indigo-500 focus:ring-indigo-500/20 transition-all"
+                  className="h-11 rounded-xl pl-11 text-sm"
                   value={formData.confirmPassword}
                   onChange={(e) =>
                     setFormData({
@@ -267,24 +275,23 @@ export default function SignupPage() {
                 {formData.confirmPassword &&
                   formData.password === formData.confirmPassword && (
                     <CheckCircle2
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-emerald-500"
+                      className="absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-success"
                       strokeWidth={2}
                     />
                   )}
               </div>
               {errors.confirmPassword && (
-                <p className="text-xs text-rose-600 font-medium flex items-center gap-1">
-                  <span className="w-1 h-1 bg-rose-600 rounded-full" />
+                <p className="flex items-center gap-1 text-xs font-medium text-danger">
+                  <span className="h-1 w-1 rounded-full bg-danger" />
                   {errors.confirmPassword[0]}
                 </p>
               )}
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/35 transition-all"
+              className="hero-panel h-11 w-full rounded-xl text-sm font-semibold text-white shadow-[0_8px_20px_-6px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10 hover:brightness-110 active:brightness-95"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -300,34 +307,31 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 my-6">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-            <span className="text-xs text-gray-400 font-medium">or</span>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
+          <div className="my-6 flex items-center gap-4">
+            <div className="h-px flex-1 bg-border" />
+            <span className="text-xs font-medium text-muted-foreground">
+              or
+            </span>
+            <div className="h-px flex-1 bg-border" />
           </div>
 
-          {/* Sign In Link */}
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <Link
-                href="/login"
-                className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
+          <p className="text-center text-sm text-muted-foreground">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:text-primary/80"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-center gap-6 mt-8 text-gray-500">
+        <div className="mt-7 flex items-center justify-center gap-6 text-muted-foreground">
           <div className="flex items-center gap-1.5">
-            <Shield className="h-3.5 w-3.5 text-emerald-600" strokeWidth={2} />
+            <ShieldCheck className="h-3.5 w-3.5 text-success" strokeWidth={2} />
             <p className="text-xs font-medium">Secure</p>
           </div>
-          <div className="w-1 h-1 bg-gray-300 rounded-full" />
+          <div className="h-1 w-1 rounded-full bg-border" />
           <p className="text-xs font-medium">
             By signing up, you agree to our Terms
           </p>

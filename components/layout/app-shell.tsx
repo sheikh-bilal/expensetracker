@@ -2,8 +2,9 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./sidebar";
 import { Header } from "./header";
 import { cn } from "@/lib/utils";
+import { getDashboardStats } from "@/actions/dashboard";
 
-export function AppShell({
+export async function AppShell({
   children,
   defaultSidebarOpen = true,
   contentClassName,
@@ -12,9 +13,14 @@ export function AppShell({
   defaultSidebarOpen?: boolean;
   contentClassName?: string;
 }) {
+  const stats = await getDashboardStats();
+
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen} className="h-svh overflow-hidden">
-      <AppSidebar />
+      <AppSidebar
+        monthlyBudget={stats.monthlyBudget}
+        monthlyExpenses={stats.monthlyExpenses}
+      />
       <SidebarInset className="flex flex-col overflow-hidden">
         <Header />
         <div

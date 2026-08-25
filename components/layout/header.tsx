@@ -59,33 +59,33 @@ export function Header() {
   const firstName = user?.name?.split(" ")[0];
 
   return (
-    <header className="sticky top-0 z-10 flex h-15.5 shrink-0 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-md sm:px-6">
-      <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
-      <div className="mx-1 hidden h-4 w-px bg-border md:block" aria-hidden />
+    <header className="sticky top-0 z-10 flex h-[66px] shrink-0 items-center gap-3.5 border-b border-border bg-background/85 px-5 backdrop-blur-md sm:px-7">
+      <SidebarTrigger className="-ml-1 rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" />
+      <div className="hidden h-5 w-px bg-border md:block" aria-hidden />
 
       <div className="hidden flex-1 md:block">
         <AppBreadcrumb />
       </div>
 
-      <div className="ml-auto flex items-center gap-1.5">
+      <div className="ml-auto flex items-center gap-2">
         <NotificationsPopover />
 
-        <div className="mx-1 h-4 w-px bg-border" aria-hidden />
+        <div className="h-5 w-px bg-border" aria-hidden />
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50">
-            <Avatar className="h-7 w-7 ring-1 ring-foreground/10">
+          <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-full py-1 pl-1 pr-3 outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring/50">
+            <Avatar className="h-[30px] w-[30px] shadow-[0_0_0_2px_hsl(var(--background)),0_0_0_3px_hsl(var(--border))]">
               <AvatarImage src="/avatar.jpg" alt="" />
-              <AvatarFallback className="hero-panel text-[10px] font-semibold text-white">
+              <AvatarFallback className="hero-panel text-[11px] font-bold text-white">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <span className="hidden max-w-[8rem] truncate text-[13px] font-medium text-foreground sm:block">
+            <span className="hidden max-w-[8rem] truncate text-[13.5px] font-semibold text-foreground sm:block">
               {isLoading ? "…" : (firstName ?? "Account")}
             </span>
             <ChevronDown
               className="hidden h-3.5 w-3.5 text-muted-foreground sm:block"
-              strokeWidth={2}
+              strokeWidth={2.2}
             />
           </DropdownMenuTrigger>
 

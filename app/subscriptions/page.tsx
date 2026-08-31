@@ -34,8 +34,6 @@ import {
   Search,
   Trash2,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
   CreditCard,
   CalendarDays,
   CalendarClock,
@@ -54,6 +52,7 @@ import {
   ConfirmDialog,
   useConfirmDialog,
 } from "@/components/ui/confirm-dialog";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 type SubscriptionRecord = {
   _id: string;
@@ -63,8 +62,6 @@ type SubscriptionRecord = {
   category: string;
   isActive: boolean;
 };
-
-const ITEMS_PER_PAGE = 8;
 
 const CATEGORIES = [
   { value: "all", label: "All Categories" },
@@ -114,6 +111,7 @@ export default function SubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [formCategory, setFormCategory] = useState("");
   const {
@@ -188,15 +186,15 @@ export default function SubscriptionsPage() {
     };
   }, [subscriptions]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = filtered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
   );
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, pageSize]);
 
   const statTiles = [
     {
@@ -484,67 +482,13 @@ export default function SubscriptionsPage() {
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between border-t bg-muted/30 px-5 py-3">
-              <p className="text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  {(currentPage - 1) * ITEMS_PER_PAGE + 1}–
-                  {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}
-                </span>{" "}
-                of{" "}
-                <span className="font-medium text-foreground">
-                  {filtered.length}
-                </span>
-              </p>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((p) => p - 1)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(
-                    (p) =>
-                      p === 1 ||
-                      p === totalPages ||
-                      Math.abs(p - currentPage) <= 1,
-                  )
-                  .map((p, idx, arr) => (
-                    <div key={p} className="flex items-center">
-                      {idx > 0 && arr[idx - 1] !== p - 1 && (
-                        <span className="px-1 text-xs text-muted-foreground">
-                          …
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn(
-                          "h-7 w-7 rounded-lg text-xs font-semibold",
-                          p === currentPage
-                            ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                        )}
-                        onClick={() => setCurrentPage(p)}
-                      >
-                        {p}
-                      </Button>
-                    </div>
-                  ))}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30"
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((p) => p + 1)}
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <TablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={setPageSize}
+            />
           </>
         )}
       </Card>

@@ -33,8 +33,8 @@
     --muted: 220 14% 94%;
     --muted-foreground: 220 9% 50%;
 
-    --accent: 239 84% 58%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 220 14% 94%;
+    --accent-foreground: 224 15% 12%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
@@ -121,8 +121,8 @@
     --muted: 224 14% 16%;
     --muted-foreground: 220 9% 55%;
 
-    --accent: 239 84% 62%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 224 14% 18%;
+    --accent-foreground: 220 14% 93%;
 
     --destructive: 0 65% 52%;
     --destructive-foreground: 0 0% 100%;

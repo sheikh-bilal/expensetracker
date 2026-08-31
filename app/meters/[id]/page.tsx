@@ -156,12 +156,8 @@ export default function MeterDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
         <p className="text-sm font-medium text-foreground">Meter not found</p>
-        <Button
-          variant="outline"
-          className="rounded-lg"
-          render={<Link href="/meters" />}
-        >
-          Back to Meters
+        <Button asChild variant="outline" className="rounded-lg">
+          <Link href="/meters">Back to Meters</Link>
         </Button>
       </div>
     );
@@ -291,11 +287,9 @@ export default function MeterDetailPage() {
               >
                 <SelectTrigger className="h-8 w-36 rounded-lg text-xs">
                   <SelectValue>
-                    {(value) =>
-                      YEAR_FILTER_LABELS[
-                        value as keyof typeof YEAR_FILTER_LABELS
-                      ] ?? value
-                    }
+                    {YEAR_FILTER_LABELS[
+                      yearFilter as keyof typeof YEAR_FILTER_LABELS
+                    ] ?? yearFilter}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>

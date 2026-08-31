@@ -156,13 +156,15 @@ export function SubscriptionsList({
           </CardDescription>
           <CardAction>
             <Button
+              asChild
               variant="ghost"
               size="sm"
               className="h-7 gap-1 px-2 text-xs font-medium text-primary hover:bg-primary/10 hover:text-primary"
-              render={<Link href="/subscriptions" />}
             >
-              Manage
-              <ArrowRight className="h-3 w-3" />
+              <Link href="/subscriptions">
+                Manage
+                <ArrowRight className="h-3 w-3" />
+              </Link>
             </Button>
           </CardAction>
         </CardHeader>

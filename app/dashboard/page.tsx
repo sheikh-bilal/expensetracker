@@ -94,11 +94,13 @@ export default async function DashboardPage() {
           </h1>
         </div>
         <Button
+          asChild
           className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
-          render={<Link href="/expenses/new" />}
         >
-          <Plus className="h-4 w-4" />
-          New Expense
+          <Link href="/expenses/new">
+            <Plus className="h-4 w-4" />
+            New Expense
+          </Link>
         </Button>
       </div>
 

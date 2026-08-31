@@ -1,5 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 @config "../tailwind.config.ts";
 
 @layer base {
@@ -16,15 +19,15 @@
 
     --sidebar: 0 0% 100%;
     --sidebar-foreground: 224 15% 12%;
-    --sidebar-primary: 239 84% 58%;
+    --sidebar-primary: 235 50% 22%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 220 14% 95%;
     --sidebar-accent-foreground: 224 15% 12%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 239 84% 58%;
+    --sidebar-ring: 235 50% 22%;
 
-    /* Single primary: Indigo */
-    --primary: 239 84% 58%;
+    /* Single primary: matches the sidebar navy */
+    --primary: 235 50% 22%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 94%;
@@ -41,7 +44,7 @@
 
     --border: 220 13% 90%;
     --input: 220 13% 90%;
-    --ring: 239 84% 58%;
+    --ring: 236 55% 32%;
 
     --radius: 0.75rem;
 
@@ -105,14 +108,14 @@
 
     --sidebar: 224 18% 12%;
     --sidebar-foreground: 220 14% 93%;
-    --sidebar-primary: 239 84% 62%;
+    --sidebar-primary: 235 50% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 224 14% 18%;
     --sidebar-accent-foreground: 220 14% 93%;
     --sidebar-border: 224 12% 20%;
-    --sidebar-ring: 239 84% 62%;
+    --sidebar-ring: 235 50% 45%;
 
-    --primary: 239 84% 62%;
+    --primary: 235 50% 45%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 224 14% 18%;
@@ -129,7 +132,7 @@
 
     --border: 224 12% 20%;
     --input: 224 12% 20%;
-    --ring: 239 84% 62%;
+    --ring: 235 50% 45%;
 
     --success: 142 65% 45%;
     --success-foreground: 0 0% 100%;
@@ -168,6 +171,15 @@
     --pay-card: #9085e9;
     --pay-bank: #199e70;
     --pay-cash: #c98500;
+  }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
   }
 }
 

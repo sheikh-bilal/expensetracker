@@ -298,10 +298,8 @@ export default function SubscriptionsPage() {
             >
               <SelectTrigger className="h-9 w-[150px] rounded-lg bg-card text-sm">
                 <SelectValue>
-                  {(value) =>
-                    CATEGORIES.find((c) => c.value === value)?.label ??
-                    "All Categories"
-                  }
+                  {CATEGORIES.find((c) => c.value === selectedCategory)
+                    ?.label ?? "All Categories"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -569,10 +567,8 @@ export default function SubscriptionsPage() {
                     className="h-10 w-full rounded-lg"
                   >
                     <SelectValue placeholder="Select category">
-                      {(value) =>
-                        CATEGORIES.find((c) => c.value === value)?.label ??
-                        "Select category"
-                      }
+                      {CATEGORIES.find((c) => c.value === formCategory)
+                        ?.label ?? "Select category"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>

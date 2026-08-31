@@ -67,6 +67,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
+        asChild
         isActive={isActive}
         tooltip={item.name}
         className={cn(
@@ -74,23 +75,24 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
           "hover:bg-muted hover:text-foreground",
           "data-active:bg-[hsl(233_45%_11%)]/[0.06] data-active:font-semibold data-active:text-[hsl(233_45%_18%)] data-active:shadow-[inset_0_0_0_1px_hsl(233_45%_11%/0.1)]",
         )}
-        render={<Link href={item.href} />}
       >
-        <span
-          className={cn(
-            "hero-panel flex size-6 shrink-0 items-center justify-center rounded-[7px] transition-colors",
-            isActive
-              ? "text-white shadow-sm ring-1 ring-white/10"
-              : "bg-none text-foreground/65",
-            "group-data-[collapsible=icon]:size-auto group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-inherit group-data-[collapsible=icon]:shadow-none",
-          )}
-        >
-          <Icon
-            className={cn(isActive ? "size-[14px]" : "size-[17px]")}
-            strokeWidth={isActive ? 2.3 : 1.8}
-          />
-        </span>
-        <span className="truncate">{item.name}</span>
+        <Link href={item.href}>
+          <span
+            className={cn(
+              "hero-panel flex size-6 shrink-0 items-center justify-center rounded-[7px] transition-colors",
+              isActive
+                ? "text-white shadow-sm ring-1 ring-white/10"
+                : "bg-none text-foreground/65",
+              "group-data-[collapsible=icon]:size-auto group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-inherit group-data-[collapsible=icon]:shadow-none",
+            )}
+          >
+            <Icon
+              className={cn(isActive ? "size-[14px]" : "size-[17px]")}
+              strokeWidth={isActive ? 2.3 : 1.8}
+            />
+          </span>
+          <span className="truncate">{item.name}</span>
+        </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
@@ -140,18 +142,20 @@ export function AppSidebar({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  asChild
                   tooltip="New Expense"
                   className={cn(
                     "hero-panel h-[42px] justify-center gap-2 rounded-[11px] text-[13.5px] font-semibold text-white shadow-[0_8px_18px_-6px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10",
                     "hover:brightness-110 active:brightness-95",
                     "group-data-[collapsible=icon]:justify-center",
                   )}
-                  render={<Link href="/expenses/new" />}
                 >
-                  <Plus className="size-[15px] shrink-0" strokeWidth={2.5} />
-                  <span className="group-data-[collapsible=icon]:hidden">
-                    New Expense
-                  </span>
+                  <Link href="/expenses/new">
+                    <Plus className="size-[15px] shrink-0" strokeWidth={2.5} />
+                    <span className="group-data-[collapsible=icon]:hidden">
+                      New Expense
+                    </span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -447,12 +447,12 @@ export default function NewExpensePage() {
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-3 pt-1">
                   <Button
+                    asChild
                     type="button"
                     variant="ghost"
                     className="h-10 rounded-sm px-5 font-medium"
-                    render={<Link href="/dashboard" />}
                   >
-                    Cancel
+                    <Link href="/dashboard">Cancel</Link>
                   </Button>
                   <Button
                     type="submit"

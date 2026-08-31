@@ -55,8 +55,8 @@ export function AppBreadcrumb() {
               {index === withRoot.length - 1 ? (
                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink render={<Link href={crumb.href} />}>
-                  {crumb.label}
+                <BreadcrumbLink asChild>
+                  <Link href={crumb.href}>{crumb.label}</Link>
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>

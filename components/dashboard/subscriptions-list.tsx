@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/confirm-dialog";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 import { deleteSubscription, renewSubscription } from "@/actions/dashboard";
 
 interface Subscription {
@@ -156,13 +157,15 @@ export function SubscriptionsList({
           </CardDescription>
           <CardAction>
             <Button
+              asChild
               variant="ghost"
               size="sm"
               className="h-7 gap-1 px-2 text-xs font-medium text-primary hover:bg-primary/10 hover:text-primary"
-              render={<Link href="/subscriptions" />}
             >
-              Manage
-              <ArrowRight className="h-3 w-3" />
+              <Link href={ROUTES.SUBSCRIPTIONS}>
+                Manage
+                <ArrowRight className="h-3 w-3" />
+              </Link>
             </Button>
           </CardAction>
         </CardHeader>

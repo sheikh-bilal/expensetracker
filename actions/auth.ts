@@ -7,6 +7,7 @@ import { createSession, destroySession } from "@/lib/auth-utils";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { z } from "zod";
+import { ROUTES } from "@/lib/constants/routes";
 
 // Validation schemas
 const loginSchema = z.object({
@@ -113,7 +114,7 @@ export async function logout() {
     console.error("Logout error:", error);
   }
 
-  redirect("/login");
+  redirect(ROUTES.LOGIN);
 }
 
 export async function getAuthUser() {

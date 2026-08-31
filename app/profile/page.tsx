@@ -254,7 +254,7 @@ export default function ProfilePage() {
                 <Button
                   onClick={handleSaveName}
                   disabled={nameSaving}
-                  className="h-10 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="h-10 px-4 rounded-xl"
                 >
                   {nameSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -281,7 +281,7 @@ export default function ProfilePage() {
                 </span>
                 <button
                   onClick={() => setEditingName(true)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
                 >
                   <Pencil className="h-3.5 w-3.5" />
                   Edit

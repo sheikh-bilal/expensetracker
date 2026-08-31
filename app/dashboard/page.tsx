@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
+import { ROUTES } from "@/lib/constants/routes";
 
 type ExpenseRecord = {
   _id: string;
@@ -94,11 +95,13 @@ export default async function DashboardPage() {
           </h1>
         </div>
         <Button
+          asChild
           className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
-          render={<Link href="/expenses/new" />}
         >
-          <Plus className="h-4 w-4" />
-          New Expense
+          <Link href={ROUTES.EXPENSES_NEW}>
+            <Plus className="h-4 w-4" />
+            New Expense
+          </Link>
         </Button>
       </div>
 

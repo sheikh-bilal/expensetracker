@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import {
   Sidebar,
@@ -36,26 +37,26 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Main",
     items: [
-      { name: "Overview", href: "/dashboard", icon: LayoutGrid },
-      { name: "Transactions", href: "/expenses", icon: ReceiptText },
-      { name: "Subscriptions", href: "/subscriptions", icon: Repeat },
+      { name: "Overview", href: ROUTES.DASHBOARD, icon: LayoutGrid },
+      { name: "Transactions", href: ROUTES.EXPENSES, icon: ReceiptText },
+      { name: "Subscriptions", href: ROUTES.SUBSCRIPTIONS, icon: Repeat },
     ],
   },
   {
     label: "Finance",
     items: [
-      { name: "Budgets", href: "/budgets", icon: PiggyBank },
-      { name: "Reports", href: "/reports", icon: ChartPie },
+      { name: "Budgets", href: ROUTES.BUDGETS, icon: PiggyBank },
+      { name: "Reports", href: ROUTES.REPORTS, icon: ChartPie },
     ],
   },
   {
     label: "Utilities",
-    items: [{ name: "Meters", href: "/meters", icon: Gauge }],
+    items: [{ name: "Meters", href: ROUTES.METERS, icon: Gauge }],
   },
 ];
 
 const secondaryNav: NavItem[] = [
-  { name: "Settings", href: "/settings", icon: Settings2 },
+  { name: "Settings", href: ROUTES.SETTINGS, icon: Settings2 },
 ];
 
 function isNavActive(pathname: string, href: string) {
@@ -67,6 +68,7 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
+        asChild
         isActive={isActive}
         tooltip={item.name}
         className={cn(
@@ -74,23 +76,24 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
           "hover:bg-muted hover:text-foreground",
           "data-active:bg-[hsl(233_45%_11%)]/[0.06] data-active:font-semibold data-active:text-[hsl(233_45%_18%)] data-active:shadow-[inset_0_0_0_1px_hsl(233_45%_11%/0.1)]",
         )}
-        render={<Link href={item.href} />}
       >
-        <span
-          className={cn(
-            "hero-panel flex size-6 shrink-0 items-center justify-center rounded-[7px] transition-colors",
-            isActive
-              ? "text-white shadow-sm ring-1 ring-white/10"
-              : "bg-none text-foreground/65",
-            "group-data-[collapsible=icon]:size-auto group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-inherit group-data-[collapsible=icon]:shadow-none",
-          )}
-        >
-          <Icon
-            className={cn(isActive ? "size-[14px]" : "size-[17px]")}
-            strokeWidth={isActive ? 2.3 : 1.8}
-          />
-        </span>
-        <span className="truncate">{item.name}</span>
+        <Link href={item.href}>
+          <span
+            className={cn(
+              "hero-panel flex size-6 shrink-0 items-center justify-center rounded-[7px] transition-colors",
+              isActive
+                ? "text-white shadow-sm ring-1 ring-white/10"
+                : "bg-none text-foreground/65",
+              "group-data-[collapsible=icon]:size-auto group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-inherit group-data-[collapsible=icon]:shadow-none",
+            )}
+          >
+            <Icon
+              className={cn(isActive ? "size-[14px]" : "size-[17px]")}
+              strokeWidth={isActive ? 2.3 : 1.8}
+            />
+          </span>
+          <span className="truncate">{item.name}</span>
+        </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
@@ -116,7 +119,7 @@ export function AppSidebar({
       {/* Brand */}
       <SidebarHeader className="gap-0 px-4 pb-5 pt-6">
         <Link
-          href="/dashboard"
+          href={ROUTES.DASHBOARD}
           className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <div className="hero-panel flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-white shadow-[0_6px_16px_-4px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10">
@@ -140,18 +143,20 @@ export function AppSidebar({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
+                  asChild
                   tooltip="New Expense"
                   className={cn(
                     "hero-panel h-[42px] justify-center gap-2 rounded-[11px] text-[13.5px] font-semibold text-white shadow-[0_8px_18px_-6px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10",
                     "hover:brightness-110 active:brightness-95",
                     "group-data-[collapsible=icon]:justify-center",
                   )}
-                  render={<Link href="/expenses/new" />}
                 >
-                  <Plus className="size-[15px] shrink-0" strokeWidth={2.5} />
-                  <span className="group-data-[collapsible=icon]:hidden">
-                    New Expense
-                  </span>
+                  <Link href={ROUTES.EXPENSES_NEW}>
+                    <Plus className="size-[15px] shrink-0" strokeWidth={2.5} />
+                    <span className="group-data-[collapsible=icon]:hidden">
+                      New Expense
+                    </span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

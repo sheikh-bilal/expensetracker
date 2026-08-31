@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Wallet, Mail, Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import { Toaster, useToast } from "@/components/ui/toast";
+import { ROUTES } from "@/lib/constants/routes";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function LoginPage() {
     } else if (result?.success) {
       toast.success("Welcome back!", "Redirecting to your dashboard...");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(ROUTES.DASHBOARD);
         router.refresh();
       }, 500);
     }
@@ -175,7 +176,7 @@ export default function LoginPage() {
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href={ROUTES.SIGNUP}
               className="font-semibold text-primary hover:text-primary/80"
             >
               Create one now

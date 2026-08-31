@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AppBreadcrumb } from "./breadcrumb";
 import { NotificationsPopover } from "./notifications-popover";
+import { ROUTES, API_ROUTES } from "@/lib/constants/routes";
 
 interface User {
   _id: string;
@@ -29,7 +30,7 @@ export function Header() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        const response = await fetch("/api/auth/user");
+        const response = await fetch(API_ROUTES.AUTH_USER);
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
@@ -44,8 +45,8 @@ export function Header() {
   }, []);
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
+    await fetch(API_ROUTES.AUTH_LOGOUT, { method: "POST" });
+    router.push(ROUTES.LOGIN);
     router.refresh();
   }
 
@@ -129,14 +130,14 @@ export function Header() {
 
             <div className="p-1">
               <DropdownMenuItem
-                onClick={() => router.push("/profile")}
+                onClick={() => router.push(ROUTES.PROFILE)}
                 className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium"
               >
                 <User className="h-4 w-4 text-muted-foreground" />
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => router.push("/settings")}
+                onClick={() => router.push(ROUTES.SETTINGS)}
                 className="cursor-pointer gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium"
               >
                 <Settings className="h-4 w-4 text-muted-foreground" />

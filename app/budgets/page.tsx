@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { PageLoader } from "@/components/ui/page-loader";
 import { getExpenses, getMonthlyExpenses } from "@/actions/expenses";
 import { getUserSettings } from "@/actions/settings";
+import { ROUTES } from "@/lib/constants/routes";
 import {
   CATEGORY_CONFIG,
   CATEGORY_LABELS,
@@ -183,12 +184,14 @@ export default function BudgetsPage() {
           </h1>
         </div>
         <Button
+          asChild
           variant="outline"
           className="h-9 gap-1.5 rounded-lg text-sm font-medium"
-          render={<Link href="/settings" />}
         >
-          <Settings className="h-4 w-4" />
-          Edit Budget
+          <Link href={ROUTES.SETTINGS}>
+            <Settings className="h-4 w-4" />
+            Edit Budget
+          </Link>
         </Button>
       </div>
 
@@ -208,12 +211,11 @@ export default function BudgetsPage() {
                 pacing and savings goals.
               </p>
             </div>
-            <Button
-              className="h-9 gap-2 rounded-lg font-semibold"
-              render={<Link href="/settings" />}
-            >
-              <Settings className="h-4 w-4" />
-              Go to Settings
+            <Button asChild className="h-9 gap-2 rounded-lg font-semibold">
+              <Link href={ROUTES.SETTINGS}>
+                <Settings className="h-4 w-4" />
+                Go to Settings
+              </Link>
             </Button>
           </CardContent>
         </Card>

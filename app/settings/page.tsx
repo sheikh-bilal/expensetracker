@@ -452,8 +452,8 @@ export default function SettingsPage() {
                     className="h-11 w-full rounded-lg"
                   >
                     <SelectValue>
-                      {(value) => {
-                        const curr = CURRENCY_MAP[value as string];
+                      {(() => {
+                        const curr = CURRENCY_MAP[currency];
                         return curr ? (
                           <span className="flex items-center gap-2">
                             <span className="text-base">{curr.flag}</span>
@@ -463,9 +463,9 @@ export default function SettingsPage() {
                             </span>
                           </span>
                         ) : (
-                          value
+                          currency
                         );
-                      }}
+                      })()}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import connectDB from "./db";
 import User from "@/models/User";
+import { ROUTES } from "@/lib/constants/routes";
 
 export async function getSession() {
   try {
@@ -53,7 +54,7 @@ export async function requireAuth() {
   const user = await getSession();
 
   if (!user) {
-    redirect("/login");
+    redirect(ROUTES.LOGIN);
   }
 
   return user;

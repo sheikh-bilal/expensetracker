@@ -6,6 +6,7 @@ import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { ArrowDownRight, ArrowUpRight, Sparkles } from "lucide-react";
 import { cn, trendFrom } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 
 interface HeroBandProps {
   remainingBudget: number;
@@ -218,7 +219,7 @@ export function HeroBand({
             <p className="mt-6 text-sm text-white/60">
               Set a monthly budget to unlock pacing, daily allowance and projections.{" "}
               <Link
-                href="/settings"
+                href={ROUTES.SETTINGS}
                 className="font-semibold text-teal-300 underline-offset-4 hover:underline"
               >
                 Set budget →

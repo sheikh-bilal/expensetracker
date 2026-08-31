@@ -36,6 +36,7 @@ import { getExpenses, deleteExpense } from "@/actions/expenses";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 import {
   EXPENSE_CATEGORIES,
   PAYMENT_METHODS,
@@ -227,11 +228,13 @@ export default function ExpensesPage() {
           </h1>
         </div>
         <Button
+          asChild
           className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
-          render={<Link href="/expenses/new" />}
         >
-          <Plus className="h-4 w-4" />
-          New Expense
+          <Link href={ROUTES.EXPENSES_NEW}>
+            <Plus className="h-4 w-4" />
+            New Expense
+          </Link>
         </Button>
       </div>
 
@@ -277,10 +280,8 @@ export default function ExpensesPage() {
             >
               <SelectTrigger className="h-9 w-[150px] rounded-lg bg-card text-sm">
                 <SelectValue>
-                  {(value) =>
-                    CATEGORIES.find((c) => c.value === value)?.label ??
-                    "All Categories"
-                  }
+                  {CATEGORIES.find((c) => c.value === selectedCategory)
+                    ?.label ?? "All Categories"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -297,10 +298,8 @@ export default function ExpensesPage() {
             >
               <SelectTrigger className="h-9 w-[140px] rounded-lg bg-card text-sm">
                 <SelectValue>
-                  {(value) =>
-                    PAYMENT_METHODS_LIST.find((m) => m.value === value)
-                      ?.label ?? "All Methods"
-                  }
+                  {PAYMENT_METHODS_LIST.find((m) => m.value === selectedMethod)
+                    ?.label ?? "All Methods"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -349,11 +348,13 @@ export default function ExpensesPage() {
             </div>
             {activeFilterCount === 0 && (
               <Button
+                asChild
                 size="sm"
                 className="h-8 rounded-lg text-xs font-semibold"
-                render={<Link href="/expenses/new" />}
               >
-                <Plus className="mr-1 h-3.5 w-3.5" /> Add Expense
+                <Link href={ROUTES.EXPENSES_NEW}>
+                  <Plus className="mr-1 h-3.5 w-3.5" /> Add Expense
+                </Link>
               </Button>
             )}
           </div>

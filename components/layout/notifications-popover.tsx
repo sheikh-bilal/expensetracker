@@ -106,23 +106,21 @@ export function NotificationsPopover() {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            size="icon"
-            variant="ghost"
-            className="relative h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <Bell className="h-4 w-4" strokeWidth={2} />
-            {notifications.length > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold leading-none text-danger-foreground ring-2 ring-background">
-                {notifications.length > 9 ? "9+" : notifications.length}
-              </span>
-            )}
-            <span className="sr-only">Notifications</span>
-          </Button>
-        }
-      />
+      <PopoverTrigger asChild>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="relative h-9 w-9 rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Bell className="h-4 w-4" strokeWidth={2} />
+          {notifications.length > 0 && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-bold leading-none text-danger-foreground ring-2 ring-background">
+              {notifications.length > 9 ? "9+" : notifications.length}
+            </span>
+          )}
+          <span className="sr-only">Notifications</span>
+        </Button>
+      </PopoverTrigger>
       <PopoverContent
         align="end"
         className="w-80 rounded-xl p-0 shadow-lg ring-1 ring-foreground/5"

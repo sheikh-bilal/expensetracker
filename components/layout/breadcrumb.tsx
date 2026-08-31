@@ -12,6 +12,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { ROUTES } from "@/lib/constants/routes";
 
 const SEGMENT_LABELS: Record<string, string> = {
   dashboard: "Dashboard",
@@ -41,9 +42,9 @@ export function AppBreadcrumb() {
   }));
 
   const withRoot =
-    crumbs[0]?.href === "/dashboard"
+    crumbs[0]?.href === ROUTES.DASHBOARD
       ? crumbs
-      : [{ href: "/dashboard", label: "Dashboard" }, ...crumbs];
+      : [{ href: ROUTES.DASHBOARD, label: "Dashboard" }, ...crumbs];
 
   return (
     <Breadcrumb>
@@ -55,8 +56,8 @@ export function AppBreadcrumb() {
               {index === withRoot.length - 1 ? (
                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink render={<Link href={crumb.href} />}>
-                  {crumb.label}
+                <BreadcrumbLink asChild>
+                  <Link href={crumb.href}>{crumb.label}</Link>
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>

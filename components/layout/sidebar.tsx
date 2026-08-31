@@ -84,7 +84,6 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
               isActive
                 ? "text-white shadow-sm ring-1 ring-white/10"
                 : "bg-none text-foreground/65",
-              "group-data-[collapsible=icon]:size-auto group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:text-inherit group-data-[collapsible=icon]:shadow-none",
             )}
           >
             <Icon
@@ -92,7 +91,9 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
               strokeWidth={isActive ? 2.3 : 1.8}
             />
           </span>
-          <span className="truncate">{item.name}</span>
+          <span className="truncate group-data-[collapsible=icon]:hidden">
+            {item.name}
+          </span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
@@ -117,10 +118,10 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon">
       {/* Brand */}
-      <SidebarHeader className="gap-0 px-4 pb-5 pt-6">
+      <SidebarHeader className="gap-0 px-4 pb-5 pt-6 group-data-[collapsible=icon]:px-2">
         <Link
           href={ROUTES.DASHBOARD}
-          className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+          className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50 group-data-[collapsible=icon]:justify-center"
         >
           <div className="hero-panel flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-white shadow-[0_6px_16px_-4px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10">
             <Wallet className="h-[17px] w-[17px]" strokeWidth={2} />
@@ -136,7 +137,7 @@ export function AppSidebar({
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="gap-0 px-4 py-0">
+      <SidebarContent className="gap-0 px-4 py-0 group-data-[collapsible=icon]:px-2">
         {/* Quick action */}
         <SidebarGroup className="px-0 pb-5">
           <SidebarGroupContent>
@@ -183,7 +184,7 @@ export function AppSidebar({
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border px-4 py-3">
+      <SidebarFooter className="border-t border-sidebar-border px-4 py-3 group-data-[collapsible=icon]:px-2">
         {hasBudget && (
           <div className="hero-panel group-data-[collapsible=icon]:hidden mb-2 rounded-[11px] p-3.5 text-white shadow-[0_6px_16px_-4px_hsl(233_45%_11%/0.5)] ring-1 ring-white/10">
             <div className="flex items-baseline justify-between">

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Toaster, useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function SignupPage() {
     } else if (result?.success) {
       toast.success("Account created!", "Welcome to Fintrax.");
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push(ROUTES.DASHBOARD);
         router.refresh();
       }, 800);
     }
@@ -318,7 +319,7 @@ export default function SignupPage() {
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
-              href="/login"
+              href={ROUTES.LOGIN}
               className="font-semibold text-primary hover:text-primary/80"
             >
               Sign in

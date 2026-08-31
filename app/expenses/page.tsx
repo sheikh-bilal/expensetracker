@@ -36,6 +36,7 @@ import { getExpenses, deleteExpense } from "@/actions/expenses";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 import {
   EXPENSE_CATEGORIES,
   PAYMENT_METHODS,
@@ -230,7 +231,7 @@ export default function ExpensesPage() {
           asChild
           className="h-9 gap-1.5 rounded-lg text-sm font-semibold shadow-md"
         >
-          <Link href="/expenses/new">
+          <Link href={ROUTES.EXPENSES_NEW}>
             <Plus className="h-4 w-4" />
             New Expense
           </Link>
@@ -351,7 +352,7 @@ export default function ExpensesPage() {
                 size="sm"
                 className="h-8 rounded-lg text-xs font-semibold"
               >
-                <Link href="/expenses/new">
+                <Link href={ROUTES.EXPENSES_NEW}>
                   <Plus className="mr-1 h-3.5 w-3.5" /> Add Expense
                 </Link>
               </Button>

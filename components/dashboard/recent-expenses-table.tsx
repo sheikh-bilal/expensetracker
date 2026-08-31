@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { ROUTES } from "@/lib/constants/routes";
 import {
   ConfirmDialog,
   useConfirmDialog,
@@ -106,7 +107,7 @@ export function RecentExpensesTable({ expenses }: RecentExpensesTableProps) {
               size="sm"
               className="h-7 gap-1 px-2 text-xs font-medium text-primary hover:bg-primary/10 hover:text-primary"
             >
-              <Link href="/expenses">
+              <Link href={ROUTES.EXPENSES}>
                 View all
                 <ArrowRight className="h-3 w-3" />
               </Link>

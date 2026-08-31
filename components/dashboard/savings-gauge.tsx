@@ -13,6 +13,7 @@ import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { Target } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 
 interface SavingsGaugeProps {
   current: number;
@@ -119,7 +120,7 @@ export function SavingsGauge({ current, target }: SavingsGaugeProps) {
               No goal set yet
             </p>
             <Link
-              href="/settings"
+              href={ROUTES.SETTINGS}
               className="mt-1 text-xs font-medium text-primary hover:underline"
             >
               Set a savings goal →

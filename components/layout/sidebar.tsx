@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/constants/routes";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import {
   Sidebar,
@@ -36,26 +37,26 @@ const navGroups: { label: string; items: NavItem[] }[] = [
   {
     label: "Main",
     items: [
-      { name: "Overview", href: "/dashboard", icon: LayoutGrid },
-      { name: "Transactions", href: "/expenses", icon: ReceiptText },
-      { name: "Subscriptions", href: "/subscriptions", icon: Repeat },
+      { name: "Overview", href: ROUTES.DASHBOARD, icon: LayoutGrid },
+      { name: "Transactions", href: ROUTES.EXPENSES, icon: ReceiptText },
+      { name: "Subscriptions", href: ROUTES.SUBSCRIPTIONS, icon: Repeat },
     ],
   },
   {
     label: "Finance",
     items: [
-      { name: "Budgets", href: "/budgets", icon: PiggyBank },
-      { name: "Reports", href: "/reports", icon: ChartPie },
+      { name: "Budgets", href: ROUTES.BUDGETS, icon: PiggyBank },
+      { name: "Reports", href: ROUTES.REPORTS, icon: ChartPie },
     ],
   },
   {
     label: "Utilities",
-    items: [{ name: "Meters", href: "/meters", icon: Gauge }],
+    items: [{ name: "Meters", href: ROUTES.METERS, icon: Gauge }],
   },
 ];
 
 const secondaryNav: NavItem[] = [
-  { name: "Settings", href: "/settings", icon: Settings2 },
+  { name: "Settings", href: ROUTES.SETTINGS, icon: Settings2 },
 ];
 
 function isNavActive(pathname: string, href: string) {
@@ -118,7 +119,7 @@ export function AppSidebar({
       {/* Brand */}
       <SidebarHeader className="gap-0 px-4 pb-5 pt-6">
         <Link
-          href="/dashboard"
+          href={ROUTES.DASHBOARD}
           className="flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
         >
           <div className="hero-panel flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] text-white shadow-[0_6px_16px_-4px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10">
@@ -150,7 +151,7 @@ export function AppSidebar({
                     "group-data-[collapsible=icon]:justify-center",
                   )}
                 >
-                  <Link href="/expenses/new">
+                  <Link href={ROUTES.EXPENSES_NEW}>
                     <Plus className="size-[15px] shrink-0" strokeWidth={2.5} />
                     <span className="group-data-[collapsible=icon]:hidden">
                       New Expense

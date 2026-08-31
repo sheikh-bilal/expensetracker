@@ -35,6 +35,7 @@ import {
   METER_CONFIG,
   type MeterType,
 } from "@/lib/constants/meter";
+import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
 import {
   ConfirmDialog,
@@ -201,7 +202,7 @@ export default function MetersPage() {
                         <div
                           key={meter._id}
                           className="group flex cursor-pointer items-center gap-3 rounded-xl px-2 py-2.5 transition-colors hover:bg-muted/60"
-                          onClick={() => router.push(`/meters/${meter._id}`)}
+                          onClick={() => router.push(ROUTES.METER_DETAIL(meter._id))}
                         >
                           <div
                             className={cn(

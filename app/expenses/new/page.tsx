@@ -21,6 +21,7 @@ import {
   type PaymentMethod,
 } from "@/lib/constants/expense";
 import { METER_TYPES } from "@/lib/constants/meter";
+import { ROUTES } from "@/lib/constants/routes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -150,7 +151,7 @@ export default function NewExpensePage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
-          href="/dashboard"
+          href={ROUTES.DASHBOARD}
           className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground"
           aria-label="Back to dashboard"
         >
@@ -452,7 +453,7 @@ export default function NewExpensePage() {
                     variant="ghost"
                     className="h-10 rounded-sm px-5 font-medium"
                   >
-                    <Link href="/dashboard">Cancel</Link>
+                    <Link href={ROUTES.DASHBOARD}>Cancel</Link>
                   </Button>
                   <Button
                     type="submit"
@@ -554,7 +555,7 @@ export default function NewExpensePage() {
                 </div>
               )}
               <Link
-                href="/expenses"
+                href={ROUTES.EXPENSES}
                 className="mt-2 flex items-center justify-center gap-1 rounded-lg border-t py-2.5 text-xs font-medium text-primary transition-colors bg-primary/5"
               >
                 View all expenses

@@ -46,6 +46,7 @@ import {
   METER_CONFIG,
   type MeterType,
 } from "@/lib/constants/meter";
+import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils";
 import { getTotalConsumption, getLatestReading } from "@/lib/utils/meter";
 import {
@@ -120,7 +121,7 @@ export default function MeterDetailPage() {
     });
     if (confirmed) {
       await deleteMeter(params.id as string);
-      router.push("/meters");
+      router.push(ROUTES.METERS);
     }
   }
 
@@ -157,7 +158,7 @@ export default function MeterDetailPage() {
       <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
         <p className="text-sm font-medium text-foreground">Meter not found</p>
         <Button asChild variant="outline" className="rounded-lg">
-          <Link href="/meters">Back to Meters</Link>
+          <Link href={ROUTES.METERS}>Back to Meters</Link>
         </Button>
       </div>
     );
@@ -198,7 +199,7 @@ export default function MeterDetailPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-3">
           <Link
-            href="/meters"
+            href={ROUTES.METERS}
             className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-card text-muted-foreground ring-1 ring-foreground/10 transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Back to meters"
           >

@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-
-// Only these routes are publicly accessible without a session.
-// Everything else requires authentication automatically.
-const PUBLIC_ROUTES = ["/login", "/signup"];
+import { ROUTES, PUBLIC_ROUTES } from "@/lib/constants/routes";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -13,13 +10,13 @@ export function middleware(request: NextRequest) {
 
   // Unauthenticated user trying to access a protected page → redirect to login
   if (!isPublicRoute && !sessionToken) {
-    const loginUrl = new URL("/login", request.url);
+    const loginUrl = new URL(ROUTES.LOGIN, request.url);
     return NextResponse.redirect(loginUrl);
   }
 
   // Authenticated user trying to access login/signup → redirect to dashboard
   if (isPublicRoute && sessionToken) {
-    const dashboardUrl = new URL("/dashboard", request.url);
+    const dashboardUrl = new URL(ROUTES.DASHBOARD, request.url);
     return NextResponse.redirect(dashboardUrl);
   }
 

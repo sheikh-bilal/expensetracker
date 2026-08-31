@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { PageLoader } from "@/components/ui/page-loader";
 import { getExpenses, getMonthlyExpenses } from "@/actions/expenses";
 import { getUserSettings } from "@/actions/settings";
+import { ROUTES } from "@/lib/constants/routes";
 import {
   CATEGORY_CONFIG,
   CATEGORY_LABELS,
@@ -187,7 +188,7 @@ export default function BudgetsPage() {
           variant="outline"
           className="h-9 gap-1.5 rounded-lg text-sm font-medium"
         >
-          <Link href="/settings">
+          <Link href={ROUTES.SETTINGS}>
             <Settings className="h-4 w-4" />
             Edit Budget
           </Link>
@@ -211,7 +212,7 @@ export default function BudgetsPage() {
               </p>
             </div>
             <Button asChild className="h-9 gap-2 rounded-lg font-semibold">
-              <Link href="/settings">
+              <Link href={ROUTES.SETTINGS}>
                 <Settings className="h-4 w-4" />
                 Go to Settings
               </Link>

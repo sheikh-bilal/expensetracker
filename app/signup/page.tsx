@@ -111,7 +111,7 @@ export default function SignupPage() {
             <h2 className="text-lg font-bold tracking-tight text-foreground">
               Create your account
             </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Start tracking your expenses smartly today
             </p>
           </div>
@@ -308,19 +308,11 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          <div className="my-6 flex items-center gap-4">
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-xs font-medium text-muted-foreground">
-              or
-            </span>
-            <div className="h-px flex-1 bg-border" />
-          </div>
-
-          <p className="text-center text-sm text-muted-foreground">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link
               href={ROUTES.LOGIN}
-              className="font-semibold text-primary hover:text-primary/80"
+              className=" ml-1 font-semibold text-primary hover:text-primary/80"
             >
               Sign in
             </Link>
@@ -330,12 +322,10 @@ export default function SignupPage() {
         <div className="mt-7 flex items-center justify-center gap-6 text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="h-3.5 w-3.5 text-success" strokeWidth={2} />
-            <p className="text-xs font-medium">Secure</p>
+            <p className="text-xs font-medium">
+              By signing up, you agree to our Terms of Service
+            </p>{" "}
           </div>
-          <div className="h-1 w-1 rounded-full bg-border" />
-          <p className="text-xs font-medium">
-            By signing up, you agree to our Terms
-          </p>
         </div>
       </div>
     </div>

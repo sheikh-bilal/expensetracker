@@ -74,7 +74,7 @@ export default function LoginPage() {
             <h2 className="text-lg font-bold tracking-tight text-foreground">
               Welcome back
             </h2>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="text-[13px] text-muted-foreground">
               Sign in to continue to your dashboard
             </p>
           </div>
@@ -177,9 +177,9 @@ export default function LoginPage() {
             Don&apos;t have an account?{" "}
             <Link
               href={ROUTES.SIGNUP}
-              className="font-semibold text-primary hover:text-primary/80"
+              className="ml-1 font-semibold text-primary hover:text-primary/80"
             >
-              Create one now
+              Sign up
             </Link>
           </p>
         </div>

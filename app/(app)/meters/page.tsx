@@ -124,27 +124,29 @@ export default function MetersPage() {
 
             return (
               <Card key={type} className="h-full gap-0 p-0">
-                <CardHeader className="flex-row items-center gap-3 space-y-0 border-b !pb-4">
-                  <div
-                    className={cn(
-                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
-                      config.bg,
-                    )}
-                  >
-                    <Icon
-                      className={cn("h-4 w-4", config.color)}
-                      strokeWidth={2}
-                    />
-                  </div>
-                  <div>
-                    <CardTitle className="text-sm font-semibold">
-                      {METER_TYPE_LABELS[type]}
-                    </CardTitle>
-                    <CardDescription className="text-xs">
-                      {typeMeters.length} meter
-                      {typeMeters.length !== 1 ? "s" : ""} · billed in{" "}
-                      {config.unit}
-                    </CardDescription>
+                <CardHeader className="space-y-0 border-b !pb-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={cn(
+                        "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+                        config.bg,
+                      )}
+                    >
+                      <Icon
+                        className={cn("h-4 w-4", config.color)}
+                        strokeWidth={2}
+                      />
+                    </div>
+                    <div>
+                      <CardTitle className="text-sm font-semibold">
+                        {METER_TYPE_LABELS[type]}
+                      </CardTitle>
+                      <CardDescription className="text-xs">
+                        {typeMeters.length} meter
+                        {typeMeters.length !== 1 ? "s" : ""} · billed in{" "}
+                        {config.unit}
+                      </CardDescription>
+                    </div>
                   </div>
                   <CardAction>
                     <Button

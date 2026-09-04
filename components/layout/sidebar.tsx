@@ -148,7 +148,7 @@ export function AppSidebar({
                   tooltip="New Expense"
                   className={cn(
                     "hero-panel h-[42px] justify-center gap-2 rounded-[11px] text-[13.5px] font-semibold text-white shadow-[0_8px_18px_-6px_hsl(233_45%_11%/0.55)] ring-1 ring-white/10",
-                    "hover:brightness-110 active:brightness-95",
+                    "hover:bg-transparent hover:text-white hover:brightness-110 active:bg-transparent active:text-white active:brightness-95",
                     "group-data-[collapsible=icon]:justify-center",
                   )}
                 >

@@ -420,7 +420,7 @@ export default function NewExpensePage() {
                     </div>
                   </fieldset>
 
-                  <div className="space-y-2.5">
+                  <div className="flex flex-col space-y-2.5">
                     <SectionLabel>Date</SectionLabel>
                     <Input
                       id="date"
@@ -429,7 +429,7 @@ export default function NewExpensePage() {
                       required
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="h-10 rounded-lg"
+                      className="h-full min-h-10 flex-1 rounded-lg"
                     />
                   </div>
                 </div>

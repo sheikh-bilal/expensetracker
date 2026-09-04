@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { AppShell } from "@/components/layout/app-shell";
 
-export default async function BudgetsLayout({
+export default async function AppGroupLayout({
   children,
 }: {
   children: React.ReactNode;

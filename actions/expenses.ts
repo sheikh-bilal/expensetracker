@@ -67,7 +67,10 @@ export async function getExpenses(limit: number = 50) {
     if (!userId) return [];
 
     await connectDB();
-    const expenses = await Expense.find({ userId }).sort({ date: -1 }).limit(limit).lean();
+    const expenses = await Expense.find({ userId })
+      .sort({ date: -1 })
+      .limit(limit)
+      .lean();
     return JSON.parse(JSON.stringify(expenses));
   } catch (error) {
     console.error("Error fetching expenses:", error);
@@ -82,7 +85,10 @@ export async function getRecentExpenses(limit: number = 5) {
     if (!userId) return [];
 
     await connectDB();
-    const expenses = await Expense.find({ userId }).sort({ date: -1 }).limit(limit).lean();
+    const expenses = await Expense.find({ userId })
+      .sort({ date: -1 })
+      .limit(limit)
+      .lean();
     return JSON.parse(JSON.stringify(expenses));
   } catch (error) {
     console.error("Error fetching recent expenses:", error);

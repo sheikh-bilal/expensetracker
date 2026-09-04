@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { PageLoader } from "@/components/ui/page-loader";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -427,16 +428,9 @@ export default function ExpensesPage() {
                         </TableCell>
 
                         <TableCell className="py-3.5">
-                          <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-xs font-medium text-foreground">
-                            <span
-                              className={cn(
-                                "h-1.5 w-1.5 rounded-full",
-                                cfg.color.replace("text-", "bg-"),
-                              )}
-                              aria-hidden
-                            />
+                          <Badge variant="outline" className="bg-muted">
                             {label}
-                          </span>
+                          </Badge>
                         </TableCell>
 
                         <TableCell className="py-3.5">

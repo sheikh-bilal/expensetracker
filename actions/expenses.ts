@@ -7,6 +7,11 @@ import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { createMeterReading } from "@/actions/meterReadings";
 import { METER_TYPES } from "@/lib/constants/meter";
 import { getUserId } from "@/lib/auth-utils";
+import {
+  EXPENSE_STATUSES,
+  DEFAULT_EXPENSE_STATUS,
+  ExpenseStatus,
+} from "@/lib/constants/expense";
 
 export async function createExpense(formData: FormData) {
   try {
@@ -17,6 +22,7 @@ export async function createExpense(formData: FormData) {
 
     const category = formData.get("category") as string;
     const isBill = category === "bills";
+    const status = formData.get("status") as string;
 
     const expenseData: any = {
       userId,
@@ -25,6 +31,9 @@ export async function createExpense(formData: FormData) {
       date: new Date(formData.get("date") as string),
       paymentMethod: formData.get("paymentMethod") || "cash",
       description: formData.get("description") || "",
+      status: EXPENSE_STATUSES.includes(status as ExpenseStatus)
+        ? status
+        : DEFAULT_EXPENSE_STATUS,
     };
 
     if (isBill) {
@@ -107,6 +116,25 @@ export async function deleteExpense(id: string) {
   } catch (error) {
     console.error("Error deleting expense:", error);
     throw new Error("Failed to delete expense");
+  }
+}
+
+export async function updateExpensesStatus(ids: string[], status: ExpenseStatus) {
+  try {
+    const userId = await getUserId();
+    if (!userId) throw new Error("Not authenticated");
+    if (!EXPENSE_STATUSES.includes(status)) throw new Error("Invalid status");
+    if (!Array.isArray(ids) || ids.length === 0) return { success: true, modified: 0 };
+
+    await connectDB();
+    const result = await Expense.updateMany(
+      { _id: { $in: ids }, userId },
+      { $set: { status } },
+    );
+    return { success: true, modified: result.modifiedCount };
+  } catch (error) {
+    console.error("Error updating expense status:", error);
+    throw new Error("Failed to update expense status");
   }
 }
 

@@ -1,3 +1,5 @@
+import type { ExpenseStatus } from "@/lib/constants/expense";
+
 export type PaymentMethod = "card" | "bank" | "cash";
 
 export type Category =
@@ -25,6 +27,7 @@ export interface Expense {
   date: Date;
   paymentMethod: PaymentMethod;
   description?: string;
+  status?: ExpenseStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }

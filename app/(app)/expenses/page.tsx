@@ -31,9 +31,24 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Hash,
+  ChevronDown,
+  CheckCircle2,
+  Loader2,
 } from "lucide-react";
+import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TablePagination } from "@/components/ui/table-pagination";
-import { getExpenses, deleteExpense } from "@/actions/expenses";
+import {
+  getExpenses,
+  deleteExpense,
+  updateExpensesStatus,
+} from "@/actions/expenses";
 import { formatDate } from "@/lib/utils";
 import { CurrencyDisplay } from "@/components/ui/currency-display";
 import { cn } from "@/lib/utils";
@@ -44,7 +59,10 @@ import {
   CATEGORY_LABELS,
   PAYMENT_METHOD_LABELS,
   CATEGORY_CONFIG,
+  EXPENSE_STATUS_LABELS,
+  DEFAULT_EXPENSE_STATUS,
   type ExpenseCategory,
+  ExpenseStatus,
 } from "@/lib/constants/expense";
 import {
   ConfirmDialog,
@@ -60,6 +78,7 @@ type ExpenseRecord = {
   date: string | Date;
   paymentMethod: string;
   description?: string;
+  status?: ExpenseStatus;
 };
 
 const CATEGORIES = [
@@ -86,6 +105,8 @@ export default function ExpensesPage() {
   const [selectedMethod, setSelectedMethod] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [updatingStatus, setUpdatingStatus] = useState(false);
   const {
     dialog: deleteDialog,
     confirm: confirmDelete,
@@ -113,8 +134,44 @@ export default function ExpensesPage() {
     });
     if (confirmed) {
       await deleteExpense(id);
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       loadExpenses();
     }
+  }
+
+  async function handleMarkAsPaid() {
+    const ids = Array.from(selectedIds);
+    if (ids.length === 0) return;
+    setUpdatingStatus(true);
+    try {
+      await updateExpensesStatus(ids, ExpenseStatus.PAID);
+      setExpenses((prev) =>
+        prev.map((e) =>
+          selectedIds.has(e._id) ? { ...e, status: ExpenseStatus.PAID } : e,
+        ),
+      );
+      setSelectedIds(new Set());
+      toast.success(
+        `${ids.length} expense${ids.length === 1 ? "" : "s"} marked as paid`,
+      );
+    } catch {
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingStatus(false);
+    }
+  }
+
+  function toggleRow(id: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
   }
 
   const filtered = useMemo(() => {
@@ -163,9 +220,29 @@ export default function ExpensesPage() {
     currentPage * pageSize,
   );
 
+  // Selection is cleared on filter changes so hidden rows are never acted on.
   useEffect(() => {
     setCurrentPage(1);
+    setSelectedIds(new Set());
   }, [searchQuery, selectedCategory, selectedMethod, pageSize]);
+
+  const pageSelectedCount = paginated.filter((e) =>
+    selectedIds.has(e._id),
+  ).length;
+  const headerChecked =
+    pageSelectedCount === 0
+      ? false
+      : pageSelectedCount === paginated.length
+        ? true
+        : "indeterminate";
+
+  function togglePage(checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      paginated.forEach((e) => (checked ? next.add(e._id) : next.delete(e._id)));
+      return next;
+    });
+  }
 
   const activeFilterCount =
     (searchQuery ? 1 : 0) +
@@ -327,6 +404,34 @@ export default function ExpensesPage() {
               </button>
             )}
           </div>
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-2 sm:ml-auto">
+              <span className="text-xs font-medium text-muted-foreground">
+                {selectedIds.size} selected
+              </span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-9 gap-1.5 rounded-lg bg-card text-sm font-semibold"
+                    disabled={updatingStatus}
+                  >
+                    {updatingStatus && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    Action
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem onSelect={handleMarkAsPaid}>
+                    <CheckCircle2 className="text-success" />
+                    Mark as paid
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -365,7 +470,14 @@ export default function ExpensesPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b bg-muted/40 hover:bg-muted/40">
-                    <TableHead className="h-11 py-0 pl-6 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <TableHead className="h-11 w-14 py-0 pl-6 pr-4">
+                      <Checkbox
+                        checked={headerChecked}
+                        onCheckedChange={(v) => togglePage(v === true)}
+                        aria-label="Select all on this page"
+                      />
+                    </TableHead>
+                    <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Transaction
                     </TableHead>
                     <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -373,6 +485,9 @@ export default function ExpensesPage() {
                     </TableHead>
                     <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Date
+                    </TableHead>
+                    <TableHead className="h-11 py-0 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      Status
                     </TableHead>
                     <TableHead className="h-11 py-0 pr-6 text-right text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                       Amount
@@ -393,12 +508,24 @@ export default function ExpensesPage() {
                       PAYMENT_METHOD_LABELS[
                         expense.paymentMethod as keyof typeof PAYMENT_METHOD_LABELS
                       ];
+                    const status = expense.status ?? DEFAULT_EXPENSE_STATUS;
+                    const isSelected = selectedIds.has(expense._id);
                     return (
                       <TableRow
                         key={expense._id}
-                        className="group border-b transition-colors hover:bg-muted/40"
+                        data-state={isSelected ? "selected" : undefined}
+                        className="group border-b transition-colors hover:bg-muted/40 data-[state=selected]:bg-primary/5"
                       >
-                        <TableCell className="py-3.5 pl-6">
+                        <TableCell className="w-14 py-3.5 pl-6 pr-4">
+                          <Checkbox
+                            checked={isSelected}
+                            onCheckedChange={(v) =>
+                              toggleRow(expense._id, v === true)
+                            }
+                            aria-label="Select row"
+                          />
+                        </TableCell>
+                        <TableCell className="py-3.5">
                           <div className="flex items-center gap-3">
                             <div
                               className={cn(
@@ -442,6 +569,19 @@ export default function ExpensesPage() {
                               {methodLabel}
                             </p>
                           )}
+                        </TableCell>
+
+                        <TableCell className="py-3.5">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              status === ExpenseStatus.PAID
+                                ? "border-success/20 bg-success/10 text-success"
+                                : "border-warning/20 bg-warning/10 text-warning",
+                            )}
+                          >
+                            {EXPENSE_STATUS_LABELS[status]}
+                          </Badge>
                         </TableCell>
 
                         <TableCell className="py-3.5 pr-6 text-right">

@@ -17,8 +17,12 @@ import {
   PAYMENT_METHODS,
   PAYMENT_METHOD_LABELS,
   CURRENCY_SYMBOLS,
+  EXPENSE_STATUSES,
+  EXPENSE_STATUS_LABELS,
+  DEFAULT_EXPENSE_STATUS,
   type ExpenseCategory,
   type PaymentMethod,
+  ExpenseStatus,
 } from "@/lib/constants/expense";
 import { METER_TYPES } from "@/lib/constants/meter";
 import { ROUTES } from "@/lib/constants/routes";
@@ -36,6 +40,7 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
+  CircleDashed,
   Loader2,
   Receipt,
   Building2,
@@ -57,6 +62,11 @@ const PAYMENT_METHOD_ICONS: Record<PaymentMethod, React.ElementType> = {
   card: CreditCard,
   bank: Landmark,
   cash: Banknote,
+};
+
+const EXPENSE_STATUS_ICONS: Record<ExpenseStatus, React.ElementType> = {
+  [ExpenseStatus.PAID]: CheckCircle2,
+  [ExpenseStatus.UNPAID]: CircleDashed,
 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -433,6 +443,48 @@ export default function NewExpensePage() {
                     />
                   </div>
                 </div>
+
+                {/* Status */}
+                <fieldset className="space-y-2.5">
+                  <legend>
+                    <SectionLabel>Status</SectionLabel>
+                  </legend>
+                  <div className="grid max-w-xs grid-cols-2 gap-1 rounded-xl bg-muted/60 p-1">
+                    {EXPENSE_STATUSES.map((status) => {
+                      const Icon = EXPENSE_STATUS_ICONS[status];
+                      return (
+                        <label
+                          key={status}
+                          className={cn(
+                            "flex cursor-pointer items-center justify-center gap-1.5 rounded-lg px-2 py-2 transition-all duration-150",
+                            "has-[:checked]:bg-card has-[:checked]:shadow-sm has-[:checked]:ring-1 has-[:checked]:ring-foreground/10",
+                            "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring/50",
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="status"
+                            value={status}
+                            defaultChecked={status === DEFAULT_EXPENSE_STATUS}
+                            className="peer sr-only"
+                          />
+                          <Icon
+                            className={cn(
+                              "h-4 w-4 text-muted-foreground",
+                              status === ExpenseStatus.PAID
+                                ? "peer-checked:text-success"
+                                : "peer-checked:text-warning",
+                            )}
+                            strokeWidth={2}
+                          />
+                          <span className="text-[12px] font-medium text-muted-foreground peer-checked:text-foreground">
+                            {EXPENSE_STATUS_LABELS[status]}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </fieldset>
 
                 {/* Description */}
                 <div className="space-y-2.5">

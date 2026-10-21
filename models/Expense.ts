@@ -1,5 +1,11 @@
 import mongoose, { Schema, models } from "mongoose";
-import { EXPENSE_CATEGORIES, PAYMENT_METHODS, BILL_TYPES } from "@/lib/constants/expense";
+import {
+  EXPENSE_CATEGORIES,
+  PAYMENT_METHODS,
+  BILL_TYPES,
+  EXPENSE_STATUSES,
+  DEFAULT_EXPENSE_STATUS,
+} from "@/lib/constants/expense";
 
 const expenseSchema = new Schema(
   {
@@ -34,6 +40,11 @@ const expenseSchema = new Schema(
     },
     description: {
       type: String,
+    },
+    status: {
+      type: String,
+      enum: EXPENSE_STATUSES,
+      default: DEFAULT_EXPENSE_STATUS,
     },
     // Bills-specific fields
     billDetails: {

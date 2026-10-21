@@ -164,6 +164,18 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: "Cash",
 };
 
+// Expense Statuses
+export enum ExpenseStatus {
+  PAID = "paid",
+  UNPAID = "unpaid",
+}
+export const EXPENSE_STATUSES = Object.values(ExpenseStatus);
+export const DEFAULT_EXPENSE_STATUS = ExpenseStatus.UNPAID;
+export const EXPENSE_STATUS_LABELS: Record<ExpenseStatus, string> = {
+  [ExpenseStatus.PAID]: "Paid",
+  [ExpenseStatus.UNPAID]: "Unpaid",
+};
+
 // Bill Departments
 export const BILL_DEPARTMENTS = [
   "WAPDA",

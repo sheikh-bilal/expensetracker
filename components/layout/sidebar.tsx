@@ -12,6 +12,7 @@ import {
   Gauge,
   Wallet,
   Plus,
+  StickyNote,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
       { name: "Overview", href: ROUTES.DASHBOARD, icon: LayoutGrid },
       { name: "Transactions", href: ROUTES.EXPENSES, icon: ReceiptText },
       { name: "Subscriptions", href: ROUTES.SUBSCRIPTIONS, icon: Repeat },
+      { name: "Pending Notes", href: ROUTES.PENDING, icon: StickyNote },
     ],
   },
   {

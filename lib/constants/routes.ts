@@ -8,6 +8,7 @@ export const ROUTES = {
   EXPENSES_NEW: "/expenses/new",
   BUDGETS: "/budgets",
   SUBSCRIPTIONS: "/subscriptions",
+  PENDING: "/pending",
   REPORTS: "/reports",
   METERS: "/meters",
   METER_DETAIL: (id: string) => `/meters/${id}`,

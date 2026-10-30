@@ -9,6 +9,7 @@ export const ROUTES = {
   BUDGETS: "/budgets",
   SUBSCRIPTIONS: "/subscriptions",
   PENDING: "/pending",
+  LOANS: "/loans",
   REPORTS: "/reports",
   METERS: "/meters",
   METER_DETAIL: (id: string) => `/meters/${id}`,

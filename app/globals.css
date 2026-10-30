@@ -346,6 +346,55 @@
     to { opacity: 1; transform: none; }
   }
 
+  /* ── Loans: ticket-style ledger slips ───────────────────────── */
+  /* The wrapper carries the shadow so the notch mask on the slip can't clip it */
+  .loan-wrap {
+    filter: drop-shadow(0 1px 2px rgb(20 22 45 / 0.06)) drop-shadow(0 10px 16px rgb(20 22 45 / 0.07));
+    transition: transform 0.25s ease-out, filter 0.25s ease-out;
+  }
+  .loan-wrap:hover,
+  .loan-wrap:focus-within {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 2px 3px rgb(20 22 45 / 0.07)) drop-shadow(0 18px 24px rgb(20 22 45 / 0.12));
+  }
+  .dark .loan-wrap {
+    filter: drop-shadow(0 10px 16px rgb(0 0 0 / 0.4));
+  }
+
+  /* --loan-foot is the footer height; the notches and perforation sit on its top edge */
+  .loan-slip {
+    --loan-foot: 60px;
+    --loan-cut: calc(100% - var(--loan-foot));
+    --loan-notch: 9px;
+    -webkit-mask:
+      radial-gradient(circle var(--loan-notch) at 0 var(--loan-cut), #0000 97%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle var(--loan-notch) at 100% var(--loan-cut), #0000 97%, #000) right / 51% 100% no-repeat;
+    mask:
+      radial-gradient(circle var(--loan-notch) at 0 var(--loan-cut), #0000 97%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle var(--loan-notch) at 100% var(--loan-cut), #0000 97%, #000) right / 51% 100% no-repeat;
+    box-shadow: inset 0 0 0 1px hsl(var(--border));
+  }
+  .loan-perf {
+    position: absolute;
+    left: calc(var(--loan-notch) + 4px);
+    right: calc(var(--loan-notch) + 4px);
+    bottom: var(--loan-foot);
+    height: 1.5px;
+    background-image: linear-gradient(to right, hsl(var(--muted-foreground) / 0.35) 50%, transparent 0);
+    background-size: 9px 1.5px;
+  }
+
+  .loan-stamp {
+    color: hsl(var(--success));
+    border: 3px double hsl(var(--success));
+    animation: note-stamp 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  }
+
+  /* Progress bar segments grow in when the card first appears */
+  .loan-seg {
+    transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
   /* Dotted pin-board surface */
   .board-dots {
     background-image: radial-gradient(hsl(var(--foreground) / 0.09) 1px, transparent 1.2px);
@@ -356,10 +405,13 @@
     .animate-fade-in,
     .meter-sheen::after,
     .note-stamp,
+    .loan-stamp,
     .note-enter {
       animation: none;
     }
-    .sticky-note {
+    .sticky-note,
+    .loan-wrap,
+    .loan-seg {
       transition: none;
     }
   }

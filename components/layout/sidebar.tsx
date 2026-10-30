@@ -13,6 +13,7 @@ import {
   Wallet,
   Plus,
   StickyNote,
+  HandCoins,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -48,6 +49,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Finance",
     items: [
       { name: "Budgets", href: ROUTES.BUDGETS, icon: PiggyBank },
+      { name: "Loans", href: ROUTES.LOANS, icon: HandCoins },
       { name: "Reports", href: ROUTES.REPORTS, icon: ChartPie },
     ],
   },

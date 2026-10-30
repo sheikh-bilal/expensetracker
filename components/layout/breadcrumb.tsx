@@ -22,6 +22,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   reports: "Reports",
   subscriptions: "Subscriptions",
   pending: "Pending Notes",
+  loans: "Loans",
   meters: "Manage Meters",
   settings: "Settings",
   profile: "Profile",
